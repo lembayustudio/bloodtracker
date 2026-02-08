@@ -15,102 +15,121 @@
         body { font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
         .tab-active { color: #2563eb; position: relative; }
         .tab-active::after { content: ''; position: absolute; bottom: 0; left: 25%; width: 50%; height: 3px; background: #2563eb; border-radius: 10px; }
-        .card-shadow { box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05); }
+        .card-shadow { box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05); }
         .scale-line { height: 6px; background: #e2e8f0; border-radius: 10px; position: relative; margin-top: 8px; }
         .scale-marker { width: 12px; height: 12px; background: #2563eb; border-radius: 50%; position: absolute; top: -3px; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: all 0.3s ease; }
         .zone-normal { position: absolute; height: 100%; background: #22c55e; opacity: 0.3; border-radius: 2px; }
-        /* Animasi Loading Scan */
+        
+        /* Loading Animation */
         @keyframes scan { 0% { top: 0%; } 50% { top: 100%; } 100% { top: 0%; } }
         .scanning-line { position: absolute; width: 100%; height: 2px; background: #3b82f6; animation: scan 2s infinite linear; box-shadow: 0 0 10px #3b82f6; }
     </style>
 </head>
-<body class="bg-[#F8FAFC] text-slate-900">
+<body class="bg-[#F1F5F9] text-slate-900 pb-10">
 
     <div id="loginScreen" class="min-h-screen flex flex-col items-center justify-center p-8 bg-white fixed inset-0 z-[100]">
-        <div class="w-24 h-24 bg-gradient-to-tr from-blue-600 to-indigo-600 rounded-[2rem] flex items-center justify-center mb-8 shadow-2xl shadow-blue-200 rotate-12">
-            <svg class="w-12 h-12 text-white -rotate-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+        <div class="w-20 h-20 bg-gradient-to-tr from-blue-600 to-indigo-600 rounded-2xl flex items-center justify-center mb-6 shadow-xl shadow-blue-200 rotate-3">
+            <svg class="w-10 h-10 text-white -rotate-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
         </div>
-        <h1 class="text-3xl font-extrabold tracking-tight mb-2">BloodTracker<span class="text-blue-600">.</span></h1>
-        <p class="text-slate-500 text-center text-sm mb-12 leading-relaxed">Pantau trend kesihatan anda dengan analisis visual pintar.</p>
-        <button onclick="handleAuthClick()" class="w-full max-w-xs bg-slate-900 text-white font-bold py-4 px-6 rounded-2xl shadow-xl flex items-center justify-center gap-3 active:scale-95 transition-all">
+        <h1 class="text-2xl font-extrabold tracking-tight mb-2">BloodTracker<span class="text-blue-600">.</span></h1>
+        <p class="text-slate-500 text-center text-sm mb-10 leading-relaxed max-w-xs">Simpan rekod kesihatan anda dengan selamat di Google Drive peribadi.</p>
+        
+        <button onclick="handleAuthClick()" class="w-full max-w-xs bg-slate-900 text-white font-bold py-3.5 px-6 rounded-xl shadow-lg flex items-center justify-center gap-3 active:scale-95 transition-all">
             <img src="https://www.google.com/favicon.ico" class="w-5 h-5 brightness-200"> Log Masuk Google
         </button>
+        
+        <p class="mt-8 text-[10px] text-slate-400 text-center max-w-[250px]">
+            Nota: Jika keluar amaran "Unverified App", klik <strong>Advanced</strong> > <strong>Go to App (Unsafe)</strong>.
+        </p>
     </div>
 
-    <div id="mainApp" class="hidden max-w-md mx-auto min-h-screen pb-32 relative">
+    <div id="mainApp" class="hidden max-w-md mx-auto min-h-screen relative">
         
-        <header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 px-6 py-4 flex justify-between items-center border-b border-slate-100">
+        <header class="bg-white/90 backdrop-blur-md sticky top-0 z-50 px-5 py-3 flex justify-between items-center border-b border-slate-100">
             <div>
                 <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Dashboard</p>
-                <h1 class="text-xl font-extrabold text-slate-800">Utama</h1>
+                <h1 class="text-lg font-extrabold text-slate-800">Utama</h1>
             </div>
-            <div id="userAvatar" class="w-10 h-10 bg-blue-100 rounded-full border-2 border-white shadow-sm overflow-hidden flex items-center justify-center font-bold text-blue-600">User</div>
+            <div class="w-9 h-9 bg-blue-100 rounded-full border border-white shadow-sm flex items-center justify-center font-bold text-blue-600 text-sm">U</div>
         </header>
 
-        <div class="flex bg-white px-2 py-1 mb-6 border-b border-slate-100">
-            <button onclick="switchTab('input')" id="tabInput" class="flex-1 py-4 text-sm font-bold text-slate-400 tab-active">Rekod Baru</button>
-            <button onclick="switchTab('history')" id="tabHistory" class="flex-1 py-4 text-sm font-bold text-slate-400">Analisis Trend</button>
+        <div class="flex bg-white px-2 border-b border-slate-100 shadow-sm sticky top-[60px] z-40">
+            <button onclick="switchTab('input')" id="tabInput" class="flex-1 py-3 text-sm font-bold text-slate-400 tab-active transition-colors">Rekod Baru</button>
+            <button onclick="switchTab('history')" id="tabHistory" class="flex-1 py-3 text-sm font-bold text-slate-400 transition-colors">Analisis Trend</button>
         </div>
 
-        <div id="viewInput" class="px-6 space-y-6 animate-in slide-in-from-bottom-4 duration-500">
-            <div class="bg-gradient-to-br from-slate-900 to-slate-800 rounded-[2rem] p-6 text-white card-shadow relative overflow-hidden group">
-                <div class="relative z-10">
-                    <h3 class="font-bold text-lg mb-1">Imbas Keputusan</h3>
-                    <p class="text-slate-400 text-xs mb-5">AI akan membaca gambar laporan anda.</p>
+        <div id="viewInput" class="px-5 py-6 space-y-5 animate-in slide-in-from-bottom-4 duration-500">
+            
+            <div class="bg-slate-900 rounded-xl p-5 text-white card-shadow relative overflow-hidden group">
+                <div class="relative z-10 flex justify-between items-center">
+                    <div>
+                        <h3 class="font-bold text-base mb-1">Imbas Report</h3>
+                        <p class="text-slate-400 text-xs">AI Auto-fill data anda.</p>
+                    </div>
                     <input type="file" id="ocrFile" accept="image/*" class="hidden" onchange="processOCR()">
-                    <button id="btnScan" onclick="document.getElementById('ocrFile').click()" class="bg-blue-600 hover:bg-blue-700 px-6 py-2.5 rounded-xl text-xs font-bold transition-all shadow-lg shadow-blue-900/20 flex items-center gap-2">
-                        <span>📸 Ambil Gambar</span>
+                    <button id="btnScan" onclick="document.getElementById('ocrFile').click()" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg text-xs font-bold shadow-lg shadow-blue-900/50 flex items-center gap-2 transition-all active:scale-95">
+                        📸 Scan
                     </button>
                 </div>
-                <div id="scanOverlay" class="hidden absolute inset-0 bg-black/50 z-20 flex items-center justify-center">
-                    <div class="scanning-line"></div>
-                    <p class="text-xs font-bold animate-pulse">Sedang Membaca...</p>
+                <div id="scanOverlay" class="hidden absolute inset-0 bg-black/80 z-20 flex flex-col items-center justify-center">
+                    <div class="scanning-line w-full top-1/2"></div>
+                    <p class="text-xs font-bold text-blue-400 animate-pulse mt-4">Sedang Membaca...</p>
                 </div>
             </div>
 
             <form id="healthForm" class="space-y-4">
-                <div class="bg-white p-6 rounded-[2rem] card-shadow border border-slate-50">
-                    <h4 class="font-bold text-slate-800 mb-6 flex items-center gap-2">
-                        <span class="w-8 h-8 bg-red-50 text-red-500 rounded-lg flex items-center justify-center text-sm">🩸</span>
+                <div class="bg-white p-5 rounded-xl card-shadow border border-slate-50">
+                    <h4 class="font-bold text-slate-700 mb-4 text-sm flex items-center gap-2">
+                        <span class="w-6 h-6 bg-red-100 text-red-600 rounded flex items-center justify-center text-xs">🩸</span>
                         Ujian Darah Asas
                     </h4>
-                    <div class="grid grid-cols-2 gap-x-6 gap-y-4">
-                        <div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase">Hb (g/dL)</label><input type="number" step="0.1" id="hb" class="w-full text-lg font-bold border-b-2 border-slate-100 focus:border-blue-500 outline-none pb-1 transition-all"></div>
-                        <div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase">WBC (10^9)</label><input type="number" step="0.1" id="wbc" class="w-full text-lg font-bold border-b-2 border-slate-100 focus:border-blue-500 outline-none pb-1"></div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase">Hb (g/dL)</label><input type="number" step="0.1" id="hb" class="w-full text-base font-semibold border-b border-slate-200 focus:border-blue-500 outline-none py-1 transition-all bg-transparent"></div>
+                        <div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase">WBC (10^9)</label><input type="number" step="0.1" id="wbc" class="w-full text-base font-semibold border-b border-slate-200 focus:border-blue-500 outline-none py-1 transition-all bg-transparent"></div>
                     </div>
                 </div>
 
-                <div class="bg-white p-6 rounded-[2rem] card-shadow border border-slate-50">
-                    <h4 class="font-bold text-slate-800 mb-6 flex items-center gap-2">
-                        <span class="w-8 h-8 bg-orange-50 text-orange-500 rounded-lg flex items-center justify-center text-sm">🍬</span>
+                <div class="bg-white p-5 rounded-xl card-shadow border border-slate-50">
+                    <h4 class="font-bold text-slate-700 mb-4 text-sm flex items-center gap-2">
+                        <span class="w-6 h-6 bg-orange-100 text-orange-600 rounded flex items-center justify-center text-xs">🍬</span>
                         Gula & HbA1c
                     </h4>
-                    <div class="grid grid-cols-2 gap-x-6 gap-y-4">
-                        <div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase">Fasting (FBS)</label><input type="number" step="0.1" id="fbs" class="w-full text-lg font-bold border-b-2 border-slate-100 focus:border-blue-500 outline-none pb-1"></div>
-                        <div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase">HbA1c (%)</label><input type="number" step="0.1" id="hba1c" class="w-full text-lg font-bold border-b-2 border-slate-100 focus:border-blue-500 outline-none pb-1"></div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase">Fasting (FBS)</label><input type="number" step="0.1" id="fbs" class="w-full text-base font-semibold border-b border-slate-200 focus:border-blue-500 outline-none py-1 transition-all bg-transparent"></div>
+                        <div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase">HbA1c (%)</label><input type="number" step="0.1" id="hba1c" class="w-full text-base font-semibold border-b border-slate-200 focus:border-blue-500 outline-none py-1 transition-all bg-transparent"></div>
                     </div>
                 </div>
 
-                <div class="bg-white p-6 rounded-[2rem] card-shadow border border-slate-50">
-                    <h4 class="font-bold text-slate-800 mb-6 flex items-center gap-2">
-                        <span class="w-8 h-8 bg-blue-50 text-blue-500 rounded-lg flex items-center justify-center text-sm">🧠</span>
+                <div class="bg-white p-5 rounded-xl card-shadow border border-slate-50">
+                    <h4 class="font-bold text-slate-700 mb-4 text-sm flex items-center gap-2">
+                        <span class="w-6 h-6 bg-blue-100 text-blue-600 rounded flex items-center justify-center text-xs">🧠</span>
                         Hati & Ginjal
                     </h4>
-                    <div class="grid grid-cols-2 gap-x-6 gap-y-4">
-                        <div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase">ALT (U/L)</label><input type="number" id="alt" class="w-full text-lg font-bold border-b-2 border-slate-100 focus:border-blue-500 outline-none pb-1"></div>
-                        <div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase">Creat (µmol/L)</label><input type="number" id="creat" class="w-full text-lg font-bold border-b-2 border-slate-100 focus:border-blue-500 outline-none pb-1"></div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase">ALT (U/L)</label><input type="number" id="alt" class="w-full text-base font-semibold border-b border-slate-200 focus:border-blue-500 outline-none py-1 transition-all bg-transparent"></div>
+                        <div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase">Creat (µmol/L)</label><input type="number" id="creat" class="w-full text-base font-semibold border-b border-slate-200 focus:border-blue-500 outline-none py-1 transition-all bg-transparent"></div>
                     </div>
                 </div>
 
-                <button type="button" onclick="saveToGoogle()" id="btnSave" class="w-full bg-blue-600 text-white font-bold py-5 rounded-[2rem] shadow-xl shadow-blue-200 hover:bg-blue-700 active:scale-95 transition-all mt-4">
+                <button type="button" onclick="saveToGoogle()" id="btnSave" class="w-full bg-blue-600 text-white font-bold py-4 rounded-xl shadow-lg shadow-blue-200 hover:bg-blue-700 active:scale-95 transition-all mt-2">
                     Simpan Rekod
                 </button>
             </form>
+
+            <div class="pt-8 pb-4">
+                <a href="#" id="donateLink" target="_blank" class="group block w-full bg-amber-300 hover:bg-amber-400 text-amber-900 rounded-xl p-4 text-center transition-all shadow-md active:scale-95">
+                    <div class="flex items-center justify-center gap-2">
+                        <span class="text-lg">☕</span>
+                        <span class="font-bold text-sm">Belanja Saya Kopi</span>
+                    </div>
+                    <p class="text-[10px] opacity-70 mt-1">Sokong pembangunan aplikasi percuma ini</p>
+                </a>
+            </div>
         </div>
 
-        <div id="viewHistory" class="hidden px-6 space-y-4">
-            <button onclick="loadHistory()" class="w-full bg-white border border-blue-100 text-blue-600 text-xs font-bold py-3 rounded-xl">🔄 Refresh Data</button>
-            <div id="historyList" class="space-y-6 pb-20">
+        <div id="viewHistory" class="hidden px-5 py-6 space-y-4">
+            <button onclick="loadHistory()" class="w-full bg-white border border-blue-100 text-blue-600 text-xs font-bold py-3 rounded-xl hover:bg-blue-50">🔄 Refresh Data</button>
+            <div id="historyList" class="space-y-4 pb-20">
                 <div class="flex flex-col items-center py-20 text-slate-400">
                     <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-4"></div>
                     <p class="text-sm">Menyusun data anda...</p>
@@ -120,10 +139,15 @@
     </div>
 
     <script>
-        const CLIENT_ID = '30864450637-qaejqmqnq79jq2t7i188ka1fi32oc9m2.apps.googleusercontent.com'; // <--- JANGAN LUPA GANTI INI
+        // --- KONFIGURASI UTAMA ---
+        const CLIENT_ID = '30864450637-qaejqmqnq79jq2t7i188ka1fi32oc9m2.apps.googleusercontent.com'; // <--- PASTE CLIENT ID SINI
+        const DONATION_URL = 'https://www.buymeacoffee.com/'; // <--- NANTI GANTI URL INI
+
+        // Update Link Donation
+        document.getElementById('donateLink').href = DONATION_URL;
+
         const SCOPES = 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive.file';
         
-        // --- SKALA RUJUKAN KKM ---
         const RANGES = {
             fbs: { min: 3.9, max: 5.6, start: 3.0, end: 12.0, unit: 'mmol/L' },
             hba1c: { min: 4.0, max: 5.7, start: 3.0, end: 10.0, unit: '%' },
@@ -133,7 +157,6 @@
 
         let tokenClient, accessToken = null;
 
-        // --- 1. GOOGLE AUTH ---
         function gapiLoaded() {
             gapi.load('client', async () => { await gapi.client.init({ discoveryDocs: ["https://sheets.googleapis.com/$discovery/rest?version=v4", "https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"] }); });
         }
@@ -151,17 +174,15 @@
         window.onload = () => { gapiLoaded(); gisLoaded(); };
         function handleAuthClick() { tokenClient.requestAccessToken({prompt: 'consent'}); }
 
-        // --- 2. FUNGSI OCR SEBENAR (AI) ---
+        // --- OCR LOGIC ---
         async function processOCR() {
             const fileInput = document.getElementById('ocrFile');
             const file = fileInput.files[0];
             if (!file) return;
 
-            // UI Effect
             const btn = document.getElementById('btnScan');
             const overlay = document.getElementById('scanOverlay');
             btn.disabled = true;
-            btn.innerHTML = "🤖 Sedang Membaca...";
             overlay.classList.remove('hidden');
 
             try {
@@ -173,9 +194,6 @@
                 const { data: { text } } = await worker.recognize(file);
                 await worker.terminate();
 
-                console.log("AI Text:", text); // Debug di console
-
-                // Cari keywords dan masukkan nilai
                 extractValue(text, ['haemoglobin', 'hemoglobin', 'hb'], 'hb');
                 extractValue(text, ['white blood', 'wbc', 'leucocyte'], 'wbc');
                 extractValue(text, ['fasting', 'glucose', 'sugar', 'fbs'], 'fbs');
@@ -183,14 +201,13 @@
                 extractValue(text, ['alt', 'sgpt'], 'alt');
                 extractValue(text, ['creatinine', 'creat'], 'creat');
 
-                alert("✅ AI selesai membaca! Sila semak kotak yang berwarna biru.");
+                alert("✅ Siap imbas! Sila semak kotak input.");
 
             } catch (err) {
                 console.error(err);
-                alert("❌ Gagal membaca. Pastikan gambar jelas.");
+                alert("❌ Gagal membaca gambar.");
             } finally {
                 btn.disabled = false;
-                btn.innerHTML = "<span>📸 Ambil Gambar</span>";
                 overlay.classList.add('hidden');
                 fileInput.value = ''; 
             }
@@ -201,13 +218,12 @@
             for (let line of lines) {
                 const lowerLine = line.toLowerCase();
                 if (keywords.some(key => lowerLine.includes(key))) {
-                    const match = line.match(/(\d+(\.\d+)?)/); // Cari nombor
+                    const match = line.match(/(\d+(\.\d+)?)/);
                     if (match) {
                         const el = document.getElementById(elementId);
                         if (el) {
                             el.value = match[0];
-                            el.style.backgroundColor = "#dbeafe"; // Highlight biru
-                            // Reset warna lepas 3 saat
+                            el.style.backgroundColor = "#dbeafe";
                             setTimeout(() => el.style.backgroundColor = "transparent", 3000);
                             return; 
                         }
@@ -216,17 +232,22 @@
             }
         }
 
-        // --- 3. LOGIK TABS & SIMPAN ---
+        // --- NAVIGATION ---
         function switchTab(tab) {
             const views = ['viewInput', 'viewHistory'];
             const tabs = ['tabInput', 'tabHistory'];
             views.forEach(v => document.getElementById(v).classList.add('hidden'));
-            tabs.forEach(t => document.getElementById(t).classList.remove('tab-active'));
+            tabs.forEach(t => document.getElementById(t).classList.remove('tab-active', 'text-blue-600'));
+            
             document.getElementById('view' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.remove('hidden');
-            document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.add('tab-active');
+            const activeTab = document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1));
+            activeTab.classList.add('tab-active', 'text-blue-600');
+            activeTab.classList.remove('text-slate-400');
+            
             if(tab === 'history') loadHistory();
         }
 
+        // --- SAVE TO GOOGLE ---
         async function saveToGoogle() {
             const btn = document.getElementById('btnSave');
             btn.innerText = "⏳ Menyimpan..."; btn.disabled = true;
@@ -243,12 +264,12 @@
                 const rowData = [ new Date().toLocaleDateString('ms-MY'), val('hb'), val('wbc'), val('fbs'), val('hba1c'), val('alt'), val('creat') ];
                 await gapi.client.sheets.spreadsheets.values.append({ spreadsheetId: sheetId, range: 'Data!A1', valueInputOption: 'RAW', resource: { values: [rowData] } });
                 alert("✅ Berjaya disimpan!"); document.getElementById('healthForm').reset(); switchTab('history');
-            } catch (err) { alert("❌ Ralat simpan data."); }
+            } catch (err) { alert("❌ Ralat: " + JSON.stringify(err)); }
             btn.innerText = "Simpan Rekod"; btn.disabled = false;
         }
         function val(id) { return document.getElementById(id).value || '-'; }
 
-        // --- 4. PAPARAN SEJARAH (GRAPH) ---
+        // --- HISTORY VIEW ---
         async function loadHistory() {
             const list = document.getElementById('historyList');
             try {
@@ -259,11 +280,11 @@
                 if (!rows) { list.innerHTML = '<p class="text-center py-20 text-slate-400">Tiada rekod.</p>'; return; }
 
                 list.innerHTML = rows.reverse().map(row => `
-                    <div class="bg-white rounded-[2rem] p-6 card-shadow border border-slate-50">
-                        <div class="flex justify-between items-center mb-6">
-                            <span class="text-[10px] font-extrabold text-blue-600 bg-blue-50 px-3 py-1 rounded-full uppercase tracking-widest">${row[0]}</span>
+                    <div class="bg-white rounded-xl p-5 card-shadow border border-slate-50">
+                        <div class="flex justify-between items-center mb-4">
+                            <span class="text-[10px] font-extrabold text-blue-600 bg-blue-50 px-2 py-1 rounded uppercase tracking-widest">${row[0]}</span>
                         </div>
-                        <div class="space-y-6">
+                        <div class="space-y-5">
                             ${renderScaleCard('Gula (FBS)', row[3], 'fbs')}
                             ${renderScaleCard('HbA1c', row[4], 'hba1c')}
                             ${renderScaleCard('Hati (ALT)', row[5], 'alt')}
@@ -284,9 +305,8 @@
             const statusColor = isNormal ? 'text-green-600' : 'text-red-500';
             return `
                 <div class="space-y-1">
-                    <div class="flex justify-between items-end"><p class="text-[11px] font-bold text-slate-400 uppercase tracking-tight">${label}</p><p class="text-lg font-extrabold ${statusColor}">${val} <span class="text-[10px] text-slate-400">${cfg.unit}</span></p></div>
+                    <div class="flex justify-between items-end"><p class="text-[10px] font-bold text-slate-400 uppercase tracking-tight">${label}</p><p class="text-base font-extrabold ${statusColor}">${val} <span class="text-[9px] text-slate-400">${cfg.unit}</span></p></div>
                     <div class="scale-line"><div class="zone-normal" style="left: ${normalStart}%; width: ${normalWidth}%"></div><div class="scale-marker" style="left: ${pos}%"></div></div>
-                    <div class="flex justify-between text-[8px] font-bold text-slate-300 mt-1 uppercase tracking-tighter"><span>${cfg.start}</span><span>Normal: ${cfg.min}-${cfg.max}</span><span>${cfg.end}</span></div>
                 </div>`;
         }
     </script>
