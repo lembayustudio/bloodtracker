@@ -2,179 +2,333 @@
 <html lang="ms">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BloodTracker PWA</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>BloodTracker Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="manifest" href="manifest.json">
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://apis.google.com/js/api.js" async defer></script>
     <style>
-        .hidden { display: none; }
-        .active-tab { border-bottom: 3px solid #2563eb; color: #2563eb; }
+        body { -webkit-tap-highlight-color: transparent; }
+        .tab-active { border-bottom: 3px solid #2563eb; color: #2563eb; font-weight: bold; }
+        .input-group { background: white; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 15px; }
+        .input-label { font-size: 0.75rem; color: #64748b; text-transform: uppercase; font-weight: 600; margin-bottom: 4px; display: block; }
+        .input-field { width: 100%; border-bottom: 1px solid #cbd5e1; padding: 5px 0; outline: none; font-size: 1rem; color: #1e293b; background: transparent; }
+        .input-field:focus { border-color: #2563eb; }
     </style>
 </head>
-<body class="bg-slate-50">
+<body class="bg-slate-100 text-slate-800 font-sans">
 
-    <div id="loginPage" class="min-h-screen flex flex-col items-center justify-center p-6 text-center">
-        <div class="bg-white p-8 rounded-3xl shadow-xl w-full max-w-md">
-            <h1 class="text-3xl font-bold text-blue-600 mb-2">BloodTracker</h1>
-            <p class="text-gray-500 mb-8">Sila log masuk untuk mengurus rekod kesihatan anda dengan selamat di Google Drive.</p>
-            <button onclick="handleAuthClick()" class="w-full flex items-center justify-center gap-3 bg-white border border-gray-300 py-3 rounded-xl font-semibold shadow-sm hover:bg-gray-50 transition">
-                <img src="https://www.google.com/favicon.ico" class="w-5 h-5">
-                Log Masuk dengan Google
-            </button>
+    <div id="loginScreen" class="min-h-screen flex flex-col items-center justify-center p-6 bg-white absolute inset-0 z-50">
+        <div class="w-20 h-20 bg-blue-600 rounded-full flex items-center justify-center mb-6 shadow-blue-200 shadow-xl">
+            <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.384-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
         </div>
+        <h1 class="text-2xl font-bold text-slate-800 mb-2">BloodTracker Pro</h1>
+        <p class="text-slate-500 text-center text-sm mb-8">Rekod, Pantau & Analisis Kesihatan Anda<br>Simpanan Selamat di Google Drive</p>
+        <button onclick="handleAuthClick()" class="w-full max-w-xs bg-white border border-slate-300 text-slate-700 font-semibold py-3 px-4 rounded-xl shadow-sm flex items-center justify-center gap-3 hover:bg-slate-50 transition">
+            <img src="https://www.google.com/favicon.ico" class="w-5 h-5"> Login Google
+        </button>
     </div>
 
-    <div id="mainApp" class="hidden min-h-screen pb-20">
-        <nav class="bg-white border-b p-4 sticky top-0 z-50 flex justify-between items-center shadow-sm">
-            <span class="font-bold text-blue-600">BloodTracker</span>
-            <div id="userProfile" class="text-xs font-medium text-gray-600"></div>
-        </nav>
-
-        <div class="flex bg-white border-b">
-            <button onclick="showTab('inputTab')" id="btnInput" class="flex-1 py-3 font-semibold active-tab">Rekod Baru</button>
-            <button onclick="showTab('historyTab')" id="btnHistory" class="flex-1 py-3 font-semibold text-gray-400">Sejarah</button>
+    <div id="mainApp" class="hidden max-w-md mx-auto min-h-screen bg-slate-50 pb-24 shadow-2xl relative">
+        
+        <div class="bg-white px-5 py-4 sticky top-0 z-40 shadow-sm flex justify-between items-center">
+            <h1 class="text-lg font-bold text-blue-600 flex items-center gap-2">
+                BloodTracker <span class="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">BETA</span>
+            </h1>
+            <div id="statusInd" class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
         </div>
 
-        <main class="max-w-md mx-auto p-4">
+        <div class="flex bg-white border-b border-slate-200 sticky top-14 z-30">
+            <button onclick="switchTab('input')" id="tabInput" class="flex-1 py-3 text-sm text-slate-500 tab-active">Kemasukan Data</button>
+            <button onclick="switchTab('history')" id="tabHistory" class="flex-1 py-3 text-sm text-slate-500">Rekod & Analisis</button>
+        </div>
+
+        <div id="viewInput" class="p-4 space-y-4 animate-fade-in">
             
-            <div id="inputTab" class="space-y-6">
-                <div class="bg-blue-50 border-2 border-dashed border-blue-200 p-6 rounded-2xl text-center">
-                    <input type="file" id="cameraInput" accept="image/*" capture="environment" class="hidden">
-                    <label for="cameraInput" class="cursor-pointer">
-                        <div class="bg-blue-600 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-2 text-white shadow-lg">📸</div>
-                        <p class="text-sm font-bold text-blue-700">Snap Gambar Result</p>
-                        <p class="text-xs text-blue-500">Auto-fill data (Akan datang)</p>
-                    </label>
+            <div class="bg-blue-600 rounded-xl p-5 text-white shadow-lg mb-6">
+                <h3 class="font-bold text-lg">Keputusan Baru</h3>
+                <p class="text-blue-100 text-xs mb-4">Masukkan data dari laporan makmal anda.</p>
+                <div class="flex gap-2">
+                    <button class="flex-1 bg-white/20 hover:bg-white/30 py-2 rounded-lg text-xs font-semibold backdrop-blur-sm border border-white/30">
+                        📸 Scan (OCR)
+                    </button>
+                    <button onclick="clearForm()" class="px-4 bg-white/20 hover:bg-white/30 py-2 rounded-lg text-xs font-semibold backdrop-blur-sm border border-white/30">
+                        Reset
+                    </button>
                 </div>
+            </div>
 
-                <div class="bg-white p-5 rounded-2xl shadow-sm border space-y-4">
-                    <h3 class="font-bold border-b pb-2 flex items-center gap-2">🩸 Profil Darah Lengkap</h3>
-                    <div class="grid grid-cols-2 gap-4 text-sm">
-                        <div><label class="text-[10px] text-gray-400 uppercase">Hb (g/dL)</label><input type="number" id="hb" class="w-full border-b py-1 outline-none"></div>
-                        <div><label class="text-[10px] text-gray-400 uppercase">WBC (10^9/L)</label><input type="number" id="wbc" class="w-full border-b py-1 outline-none"></div>
-                        <div><label class="text-[10px] text-gray-400 uppercase">Platelet</label><input type="number" id="platelet" class="w-full border-b py-1 outline-none"></div>
-                        <div><label class="text-[10px] text-gray-400 uppercase">Kump. Darah</label>
-                            <select id="bloodGroup" class="w-full border-b py-1 outline-none bg-transparent">
-                                <option value="">- Pilih -</option>
-                                <option>A+</option><option>O+</option><option>B+</option><option>AB+</option>
-                            </select>
-                        </div>
+            <form id="healthForm" onsubmit="event.preventDefault(); saveToGoogle();">
+                
+                <div class="input-group">
+                    <h4 class="font-bold text-slate-700 mb-4 border-b pb-2 flex items-center gap-2">🩸 Darah (FBC)</h4>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div><label class="input-label">Hb (g/dL)</label><input type="number" step="0.1" id="hb" class="input-field" placeholder="12.0 - 17.0"></div>
+                        <div><label class="input-label">WBC (10^9)</label><input type="number" step="0.1" id="wbc" class="input-field" placeholder="4.0 - 11.0"></div>
+                        <div><label class="input-label">Platelet</label><input type="number" id="platelet" class="input-field" placeholder="150 - 400"></div>
+                        <div><label class="input-label">RBC</label><input type="number" step="0.1" id="rbc" class="input-field" placeholder="4.0 - 6.0"></div>
                     </div>
                 </div>
 
-                <div class="bg-white p-5 rounded-2xl shadow-sm border space-y-4">
-                    <h3 class="font-bold border-b pb-2">🍬 Gula & Kolesterol</h3>
+                <div class="input-group">
+                    <h4 class="font-bold text-slate-700 mb-4 border-b pb-2 flex items-center gap-2">🍬 Diabetes / Gula</h4>
                     <div class="space-y-3">
-                        <div><label class="text-[10px] text-gray-400 uppercase text-xs">Fasting Blood Sugar (mmol/L)</label><input type="number" id="fbs" class="w-full border-b py-1 outline-none"></div>
-                        <div><label class="text-[10px] text-gray-400 uppercase text-xs">HbA1c (%)</label><input type="number" id="hba1c" class="w-full border-b py-1 outline-none"></div>
-                        <div><label class="text-[10px] text-gray-400 uppercase text-xs">Total Cholesterol (mmol/L)</label><input type="number" id="chol" class="w-full border-b py-1 outline-none"></div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div><label class="input-label">Fasting (FBS)</label><input type="number" step="0.1" id="fbs" class="input-field" placeholder="mmol/L"></div>
+                            <div><label class="input-label">Random (RBS)</label><input type="number" step="0.1" id="rbs" class="input-field" placeholder="mmol/L"></div>
+                        </div>
+                        <div><label class="input-label">HbA1c (%)</label><input type="number" step="0.1" id="hba1c" class="input-field" placeholder="< 5.7%"></div>
                     </div>
                 </div>
 
-                <button onclick="saveToGoogle()" id="saveBtn" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold shadow-lg active:scale-95 transition">
-                    Simpan ke Google Drive
-                </button>
-            </div>
-
-            <div id="historyTab" class="hidden space-y-4">
-                <button onclick="loadHistory()" class="text-blue-600 text-sm font-medium mb-2 flex items-center gap-1">🔄 Refresh Sejarah</button>
-                <div id="historyList" class="space-y-3">
-                    <p class="text-center text-gray-400 py-10 text-sm">Memuatkan data...</p>
+                <div class="input-group">
+                    <h4 class="font-bold text-slate-700 mb-4 border-b pb-2 flex items-center gap-2">🍔 Kolesterol (Lipid)</h4>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div><label class="input-label">Total Chol</label><input type="number" step="0.1" id="chol" class="input-field" placeholder="< 5.2"></div>
+                        <div><label class="input-label">Triglyceride</label><input type="number" step="0.1" id="trig" class="input-field" placeholder="< 1.7"></div>
+                        <div><label class="input-label">LDL (Jahat)</label><input type="number" step="0.1" id="ldl" class="input-field" placeholder="< 2.6"></div>
+                        <div><label class="input-label">HDL (Baik)</label><input type="number" step="0.1" id="hdl" class="input-field" placeholder="> 1.0"></div>
+                    </div>
                 </div>
+
+                <div class="input-group">
+                    <h4 class="font-bold text-slate-700 mb-4 border-b pb-2 flex items-center gap-2">🧠 Fungsi Hati (Liver)</h4>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div><label class="input-label">ALT (SGPT)</label><input type="number" id="alt" class="input-field" placeholder="< 41 U/L"></div>
+                        <div><label class="input-label">AST (SGOT)</label><input type="number" id="ast" class="input-field" placeholder="< 40 U/L"></div>
+                        <div><label class="input-label">ALP</label><input type="number" id="alp" class="input-field" placeholder="30-120"></div>
+                        <div><label class="input-label">Bilirubin</label><input type="number" step="0.1" id="bili" class="input-field" placeholder="< 21"></div>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <h4 class="font-bold text-slate-700 mb-4 border-b pb-2 flex items-center gap-2">💧 Buah Pinggang</h4>
+                    <div class="space-y-3">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div><label class="input-label">Creatinine</label><input type="number" id="creat" class="input-field" placeholder="60-110"></div>
+                            <div><label class="input-label">Urea</label><input type="number" step="0.1" id="urea" class="input-field" placeholder="mmol/L"></div>
+                        </div>
+                        <div><label class="input-label">eGFR</label><input type="number" id="egfr" class="input-field" placeholder="mL/min"></div>
+                    </div>
+                </div>
+
+                <div class="h-4"></div> <button type="submit" id="btnSave" class="w-full bg-slate-800 text-white font-bold py-4 rounded-xl shadow-lg hover:bg-slate-900 transition flex justify-center items-center gap-2">
+                    <span>Simpan Semua Data</span>
+                </button>
+            </form>
+        </div>
+
+        <div id="viewHistory" class="hidden p-4 space-y-4">
+            <button onclick="loadHistory()" class="w-full bg-white border border-blue-200 text-blue-600 py-2 rounded-lg text-sm font-semibold shadow-sm">
+                🔄 Refresh Data Terkini
+            </button>
+            <div id="historyList" class="space-y-4 pb-10">
+                <p class="text-center text-slate-400 py-10 text-sm">Sedang memuatkan rekod...</p>
             </div>
-        </main>
+        </div>
+
     </div>
 
     <script>
-        const CLIENT_ID = '30864450637-qaejqmqnq79jq2t7i188ka1fi32oc9m2.apps.googleusercontent.com';
+        const CLIENT_ID = '30864450637-qaejqmqnq79jq2t7i188ka1fi32oc9m2.apps.googleusercontent.com'; // <--- GANTI INI
         const SCOPES = 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive.file';
-        let accessToken = null;
-        let tokenClient;
+        
+        // --- SKALA RUJUKAN KKM (Untuk Warna) ---
+        // Format: [min, max] untuk julat Normal (Hijau)
+        // Nilai luar julat ini akan jadi Merah atau Kuning
+        const RANGES = {
+            fbs: { min: 3.9, max: 5.6 }, // Gula Puasa
+            hba1c: { min: 0, max: 5.7 },
+            chol: { min: 0, max: 5.2 }, // Kolesterol Total
+            ldl: { min: 0, max: 2.6 },
+            hdl: { min: 1.0, max: 10 }, // Lagi tinggi lagi bagus (min 1.0)
+            alt: { min: 0, max: 41 }, // Hati
+            ast: { min: 0, max: 40 },
+            creat: { min: 60, max: 110 }, // Buah Pinggang
+            egfr: { min: 90, max: 200 } // eGFR > 90 bagus
+        };
 
-        // --- AUTH LOGIC ---
+        let tokenClient;
+        let accessToken = null;
+
+        // --- GOOGLE AUTH ---
         function gapiLoaded() {
             gapi.load('client', async () => {
-                await gapi.client.init({ discoveryDocs: ["https://sheets.googleapis.com/$discovery/rest?version=v4", "https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"] });
+                await gapi.client.init({
+                    discoveryDocs: ["https://sheets.googleapis.com/$discovery/rest?version=v4", "https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"],
+                });
             });
         }
 
         function gisLoaded() {
             tokenClient = google.accounts.oauth2.initTokenClient({
                 client_id: CLIENT_ID, scope: SCOPES,
-                callback: (tokenResponse) => {
-                    accessToken = tokenResponse.access_token;
-                    document.getElementById('loginPage').classList.add('hidden');
+                callback: (resp) => {
+                    if (resp.error) return;
+                    accessToken = resp.access_token;
+                    document.getElementById('loginScreen').style.display = 'none';
                     document.getElementById('mainApp').classList.remove('hidden');
-                    loadHistory();
+                    loadHistory(); // Auto load bila masuk
                 },
             });
         }
-
         window.onload = () => { gapiLoaded(); gisLoaded(); };
         function handleAuthClick() { tokenClient.requestAccessToken({prompt: 'consent'}); }
 
-        // --- TAB LOGIC ---
-        function showTab(tabId) {
-            document.getElementById('inputTab').classList.add('hidden');
-            document.getElementById('historyTab').classList.add('hidden');
-            document.getElementById(tabId).classList.remove('hidden');
-            document.getElementById('btnInput').classList.remove('active-tab', 'text-blue-600');
-            document.getElementById('btnHistory').classList.remove('active-tab', 'text-blue-600');
-            if(tabId === 'inputTab') document.getElementById('btnInput').classList.add('active-tab');
-            else { document.getElementById('btnHistory').classList.add('active-tab'); loadHistory(); }
-        }
-
-        // --- DATA LOGIC ---
-        async function getSheetId() {
-            let response = await gapi.client.drive.files.list({ q: "name = 'MyHealth_Records'", fields: 'files(id)' });
-            if (response.result.files.length > 0) return response.result.files[0].id;
+        // --- UI TABS ---
+        function switchTab(tab) {
+            document.getElementById('viewInput').classList.add('hidden');
+            document.getElementById('viewHistory').classList.add('hidden');
+            document.getElementById('tabInput').classList.remove('tab-active', 'text-blue-600');
+            document.getElementById('tabHistory').classList.remove('tab-active', 'text-blue-600');
             
-            const createResp = await gapi.client.sheets.spreadsheets.create({ resource: { properties: { title: 'MyHealth_Records' }, sheets: [{ properties: { title: 'RekodUjian' } }] } });
-            let newId = createResp.result.spreadsheetId;
-            await gapi.client.sheets.spreadsheets.values.append({
-                spreadsheetId: newId, range: 'RekodUjian!A1', valueInputOption: 'RAW',
-                resource: { values: [['Tarikh', 'Hb', 'WBC', 'Platelet', 'Kump.Darah', 'Gula', 'HbA1c', 'Kolesterol']] }
-            });
-            return newId;
+            if(tab === 'input') {
+                document.getElementById('viewInput').classList.remove('hidden');
+                document.getElementById('tabInput').classList.add('tab-active');
+            } else {
+                document.getElementById('viewHistory').classList.remove('hidden');
+                document.getElementById('tabHistory').classList.add('tab-active');
+                loadHistory();
+            }
         }
 
+        // --- SIMPAN DATA (CREATE & APPEND) ---
         async function saveToGoogle() {
-            const btn = document.getElementById('saveBtn');
-            btn.innerText = "⏳ Menyimpan...";
+            const btn = document.getElementById('btnSave');
+            btn.innerHTML = "⏳ Sedang Simpan...";
+            btn.disabled = true;
+
             try {
-                let sheetId = await getSheetId();
-                const row = [new Date().toLocaleDateString(), document.getElementById('hb').value, document.getElementById('wbc').value, document.getElementById('platelet').value, document.getElementById('bloodGroup').value, document.getElementById('fbs').value, document.getElementById('hba1c').value, document.getElementById('chol').value];
-                await gapi.client.sheets.spreadsheets.values.append({ spreadsheetId: sheetId, range: 'RekodUjian!A1', valueInputOption: 'RAW', resource: { values: [row] } });
-                alert("Data disimpan!");
-                showTab('historyTab');
-            } catch (err) { alert("Ralat simpan!"); }
-            btn.innerText = "Simpan ke Google Drive";
+                // 1. Cari File
+                let response = await gapi.client.drive.files.list({
+                    q: "name = 'MyHealth_Records' and mimeType = 'application/vnd.google-apps.spreadsheet' and trashed = false",
+                    fields: 'files(id)'
+                });
+
+                let sheetId;
+                // Header Column (Mesti ikut turutan array rowData di bawah)
+                const HEADERS = ['Tarikh', 'Hb', 'WBC', 'Platelet', 'RBC', 'FBS', 'RBS', 'HbA1c', 'Tot.Chol', 'Trig', 'LDL', 'HDL', 'ALT', 'AST', 'ALP', 'Bili', 'Creat', 'Urea', 'eGFR'];
+
+                if (response.result.files.length > 0) {
+                    sheetId = response.result.files[0].id;
+                } else {
+                    // Buat File Baru dengan Header Lengkap
+                    const createResp = await gapi.client.sheets.spreadsheets.create({
+                        resource: { properties: { title: 'MyHealth_Records' }, sheets: [{ properties: { title: 'Data' } }] }
+                    });
+                    sheetId = createResp.result.spreadsheetId;
+                    await gapi.client.sheets.spreadsheets.values.append({
+                        spreadsheetId: sheetId, range: 'Data!A1', valueInputOption: 'RAW',
+                        resource: { values: [HEADERS] }
+                    });
+                }
+
+                // 2. Kumpul Data dari Form
+                // Susunan ini WAJIB sama dengan HEADERS di atas
+                const rowData = [
+                    new Date().toLocaleString('ms-MY'),
+                    val('hb'), val('wbc'), val('platelet'), val('rbc'), // FBC
+                    val('fbs'), val('rbs'), val('hba1c'), // Gula
+                    val('chol'), val('trig'), val('ldl'), val('hdl'), // Lipid
+                    val('alt'), val('ast'), val('alp'), val('bili'), // Hati
+                    val('creat'), val('urea'), val('egfr') // Buah Pinggang
+                ];
+
+                await gapi.client.sheets.spreadsheets.values.append({
+                    spreadsheetId: sheetId, range: 'Data!A1', valueInputOption: 'RAW',
+                    resource: { values: [rowData] }
+                });
+
+                alert("✅ Berjaya! Data selamat disimpan.");
+                document.getElementById('healthForm').reset();
+                switchTab('history');
+
+            } catch (err) {
+                console.error(err);
+                alert("❌ Ralat: " + JSON.stringify(err));
+            }
+            btn.innerHTML = "Simpan Semua Data";
+            btn.disabled = false;
         }
 
+        // Helper untuk ambil value (kalau kosong letak '-')
+        function val(id) { return document.getElementById(id).value || '-'; }
+
+        // --- PAPARAN SEJARAH & ANALISIS WARNA ---
         async function loadHistory() {
-            const container = document.getElementById('historyList');
+            const list = document.getElementById('historyList');
+            list.innerHTML = '<p class="text-center text-gray-400 mt-10">Mengambil data dari Google Drive...</p>';
+
             try {
-                let sheetId = await getSheetId();
-                let response = await gapi.client.sheets.spreadsheets.values.get({ spreadsheetId: sheetId, range: 'RekodUjian!A2:H100' });
-                const rows = response.result.values;
-                if (!rows) { container.innerHTML = "<p class='text-center text-gray-400 py-10'>Tiada rekod dijumpai.</p>"; return; }
-                
-                container.innerHTML = rows.reverse().map(row => `
-                    <div class="bg-white p-4 rounded-xl shadow-sm border border-l-4 border-l-blue-500">
-                        <div class="flex justify-between mb-2">
-                            <span class="text-[10px] font-bold text-gray-400 uppercase">${row[0]}</span>
-                            <span class="text-[10px] bg-blue-100 text-blue-700 px-2 rounded-full uppercase font-bold">${row[4] || '-'}</span>
+                let response = await gapi.client.drive.files.list({
+                    q: "name = 'MyHealth_Records' and mimeType = 'application/vnd.google-apps.spreadsheet' and trashed = false",
+                    fields: 'files(id)'
+                });
+
+                if (response.result.files.length === 0) {
+                    list.innerHTML = '<p class="text-center text-gray-500 mt-10">Tiada rekod dijumpai. Sila masukkan data pertama anda.</p>';
+                    return;
+                }
+
+                let sheetId = response.result.files[0].id;
+                let dataResp = await gapi.client.sheets.spreadsheets.values.get({
+                    spreadsheetId: sheetId, range: 'Data!A2:S50' // Baca sampai column S
+                });
+
+                let rows = dataResp.result.values;
+                if (!rows || rows.length === 0) {
+                    list.innerHTML = '<p class="text-center text-gray-500">Tiada data.</p>'; return;
+                }
+
+                // Render Kad (Terbalikkan array supaya yang baru duduk atas)
+                list.innerHTML = rows.reverse().map(row => {
+                    // Mapping Data ikut index array rowData tadi
+                    // 0:Date, 5:FBS, 8:Chol, 12:ALT, 16:Creat
+                    return `
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                        <div class="bg-slate-50 px-4 py-2 border-b flex justify-between items-center">
+                            <span class="text-xs font-bold text-slate-500 uppercase">${row[0].split(',')[0]}</span>
+                            <span class="text-[10px] bg-slate-200 text-slate-600 px-2 rounded-full">Manual Entry</span>
                         </div>
-                        <div class="grid grid-cols-3 gap-2 text-xs">
-                            <div><p class="text-gray-400">Hb</p><p class="font-bold">${row[1] || '-'}</p></div>
-                            <div><p class="text-gray-400">Gula</p><p class="font-bold text-red-600">${row[5] || '-'}</p></div>
-                            <div><p class="text-gray-400">Kolest.</p><p class="font-bold">${row[7] || '-'}</p></div>
+                        <div class="p-4 grid grid-cols-2 gap-y-4 gap-x-2">
+                            ${statItem('Gula (FBS)', row[5], 'fbs')}
+                            ${statItem('Kolesterol', row[8], 'chol')}
+                            ${statItem('Hati (ALT)', row[12], 'alt')}
+                            ${statItem('Ginjal (Creat)', row[16], 'creat')}
                         </div>
-                    </div>
-                `).join('');
-            } catch (err) { container.innerHTML = "Gagal memuatkan sejarah."; }
+                        <div class="bg-blue-50 px-4 py-2 text-center">
+                            <button onclick="alert('Paparan terperinci akan datang!')" class="text-xs text-blue-600 font-bold">Lihat Butiran Penuh &rarr;</button>
+                        </div>
+                    </div>`;
+                }).join('');
+
+            } catch (err) {
+                list.innerHTML = '<p class="text-center text-red-400">Gagal memuatkan data.</p>';
+            }
+        }
+
+        // Fungsi tentukan warna (Hijau/Merah)
+        function statItem(label, value, type) {
+            if(!value || value === '-') return `<div><p class="text-[10px] text-gray-400 uppercase">${label}</p><p class="text-sm font-bold text-gray-300">-</p></div>`;
+            
+            let num = parseFloat(value);
+            let colorClass = "text-slate-800"; // Default hitam
+            
+            // Check Skala
+            if (RANGES[type]) {
+                if (num >= RANGES[type].min && num <= RANGES[type].max) colorClass = "text-green-600"; // Selamat
+                else colorClass = "text-red-600"; // Bahaya/Warning
+            }
+
+            // Tambah icon status
+            let icon = (colorClass.includes('red')) ? '⚠️' : '✅';
+
+            return `
+            <div>
+                <p class="text-[10px] text-gray-400 uppercase font-semibold">${label}</p>
+                <p class="text-lg font-bold ${colorClass}">${value} <span class="text-[10px]">${icon}</span></p>
+            </div>`;
         }
     </script>
 </body>
