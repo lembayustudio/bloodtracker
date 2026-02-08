@@ -11,240 +11,245 @@
     <link rel="manifest" href="manifest.json">
     
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&display=swap');
         body { font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
-        .tab-active { color: #2563eb; position: relative; }
-        .tab-active::after { content: ''; position: absolute; bottom: 0; left: 25%; width: 50%; height: 3px; background: #2563eb; border-radius: 10px; }
-        .card-shadow { box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05); }
-        .scale-line { height: 6px; background: #e2e8f0; border-radius: 10px; position: relative; margin-top: 8px; }
-        .scale-marker { width: 12px; height: 12px; background: #2563eb; border-radius: 50%; position: absolute; top: -3px; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: all 0.3s ease; }
-        .zone-normal { position: absolute; height: 100%; background: #22c55e; opacity: 0.3; border-radius: 2px; }
         
-        /* Loading Animation */
+        .tab-active { color: #2563eb; position: relative; }
+        .tab-active::after { content: ''; position: absolute; bottom: 0; left: 20%; width: 60%; height: 4px; background: #2563eb; border-radius: 10px; }
+        
+        .card-shadow { box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05); }
+        .scale-line { height: 8px; background: #e2e8f0; border-radius: 10px; position: relative; margin-top: 10px; }
+        .scale-marker { width: 14px; height: 14px; background: #2563eb; border-radius: 50%; position: absolute; top: -3px; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3); transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+        .zone-normal { position: absolute; height: 100%; background: #22c55e; opacity: 0.3; border-radius: 4px; }
+        
+        /* Input Styling */
+        .input-label { font-size: 0.85rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; }
+        .input-box { width: 100%; font-size: 1.125rem; font-weight: 700; border-bottom: 2px solid #e2e8f0; padding: 4px 0; background: transparent; outline: none; transition: all 0.2s; color: #1e293b; }
+        .input-box:focus { border-color: #3b82f6; }
+
+        /* Animation */
         @keyframes scan { 0% { top: 0%; } 50% { top: 100%; } 100% { top: 0%; } }
         .scanning-line { position: absolute; width: 100%; height: 2px; background: #3b82f6; animation: scan 2s infinite linear; box-shadow: 0 0 10px #3b82f6; }
     </style>
 </head>
-<body class="bg-[#F1F5F9] text-slate-900 pb-10">
+<body class="bg-[#F8FAFC] text-slate-900 pb-10">
 
     <div id="loginScreen" class="min-h-screen flex flex-col items-center justify-center p-8 bg-white fixed inset-0 z-[100]">
-        <div class="w-20 h-20 bg-gradient-to-tr from-blue-600 to-indigo-600 rounded-2xl flex items-center justify-center mb-6 shadow-xl shadow-blue-200 rotate-3">
-            <svg class="w-10 h-10 text-white -rotate-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+        <div class="w-24 h-24 bg-blue-600 rounded-3xl flex items-center justify-center mb-6 shadow-2xl shadow-blue-200">
+            <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
         </div>
-        <h1 class="text-2xl font-extrabold tracking-tight mb-2">BloodTracker<span class="text-blue-600">.</span></h1>
-        <p class="text-slate-500 text-center text-sm mb-10 leading-relaxed max-w-xs">Simpan rekod kesihatan anda dengan selamat di Google Drive peribadi.</p>
+        <h1 class="text-3xl font-extrabold tracking-tight mb-2">BloodTracker<span class="text-blue-600">.</span></h1>
+        <p class="text-slate-500 text-center text-base mb-10 leading-relaxed max-w-xs">Analisis lengkap kesihatan anda mengikut piawaian KKM.</p>
         
-        <button onclick="handleAuthClick()" class="w-full max-w-xs bg-slate-900 text-white font-bold py-3.5 px-6 rounded-xl shadow-lg flex items-center justify-center gap-3 active:scale-95 transition-all">
-            <img src="https://www.google.com/favicon.ico" class="w-5 h-5 brightness-200"> Log Masuk Google
+        <button onclick="handleAuthClick()" class="w-full max-w-xs bg-slate-900 text-white font-bold py-4 px-6 rounded-xl shadow-lg flex items-center justify-center gap-3 active:scale-95 transition-all">
+            <img src="https://www.google.com/favicon.ico" class="w-6 h-6 brightness-200"> Log Masuk Google
         </button>
-        
-        <p class="mt-8 text-[10px] text-slate-400 text-center max-w-[250px]">
-            Nota: Jika keluar amaran "Unverified App", klik <strong>Advanced</strong> > <strong>Go to App (Unsafe)</strong>.
-        </p>
+        <p class="mt-8 text-xs text-slate-400 text-center max-w-[250px]">Nota: Klik <strong>Advanced > Go to App</strong> jika keluar amaran keselamatan.</p>
     </div>
 
     <div id="mainApp" class="hidden max-w-md mx-auto min-h-screen relative">
         
-        <header class="bg-white/90 backdrop-blur-md sticky top-0 z-50 px-5 py-3 flex justify-between items-center border-b border-slate-100">
+        <header class="bg-white/90 backdrop-blur-md sticky top-0 z-50 px-6 py-4 flex justify-between items-center border-b border-slate-200 shadow-sm">
             <div>
-                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Dashboard</p>
-                <h1 class="text-lg font-extrabold text-slate-800">Utama</h1>
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Dashboard</p>
+                <h1 class="text-xl font-extrabold text-slate-800">Utama</h1>
             </div>
-            <div class="w-9 h-9 bg-blue-100 rounded-full border border-white shadow-sm flex items-center justify-center font-bold text-blue-600 text-sm">U</div>
+            <div class="w-10 h-10 bg-blue-100 rounded-full border border-white shadow flex items-center justify-center font-bold text-blue-600">U</div>
         </header>
 
-        <div class="flex bg-white px-2 border-b border-slate-100 shadow-sm sticky top-[60px] z-40">
-            <button onclick="switchTab('input')" id="tabInput" class="flex-1 py-3 text-sm font-bold text-slate-400 tab-active transition-colors">Rekod Baru</button>
-            <button onclick="switchTab('history')" id="tabHistory" class="flex-1 py-3 text-sm font-bold text-slate-400 transition-colors">Analisis Trend</button>
+        <div class="flex bg-white px-4 border-b border-slate-200 sticky top-[73px] z-40">
+            <button onclick="switchTab('input')" id="tabInput" class="flex-1 py-4 text-base font-bold text-slate-400 tab-active transition-colors">Rekod Baru</button>
+            <button onclick="switchTab('history')" id="tabHistory" class="flex-1 py-4 text-base font-bold text-slate-400 transition-colors">Analisis</button>
         </div>
 
-        <div id="viewInput" class="px-5 py-6 space-y-5 animate-in slide-in-from-bottom-4 duration-500">
+        <div id="viewInput" class="px-5 py-6 space-y-6 animate-in slide-in-from-bottom-4 duration-500">
             
-            <div class="bg-slate-900 rounded-xl p-5 text-white card-shadow relative overflow-hidden group">
+            <div class="bg-slate-900 rounded-2xl p-6 text-white card-shadow relative overflow-hidden group">
                 <div class="relative z-10 flex justify-between items-center">
                     <div>
-                        <h3 class="font-bold text-base mb-1">Imbas Report</h3>
-                        <p class="text-slate-400 text-xs">AI Auto-fill data anda.</p>
+                        <h3 class="font-bold text-lg mb-1">Imbas Report</h3>
+                        <p class="text-slate-400 text-sm">AI Auto-fill data anda.</p>
                     </div>
                     <input type="file" id="ocrFile" accept="image/*" class="hidden" onchange="processOCR()">
-                    <button id="btnScan" onclick="document.getElementById('ocrFile').click()" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg text-xs font-bold shadow-lg shadow-blue-900/50 flex items-center gap-2 transition-all active:scale-95">
+                    <button id="btnScan" onclick="document.getElementById('ocrFile').click()" class="bg-blue-600 hover:bg-blue-500 text-white px-5 py-3 rounded-xl text-sm font-bold shadow-lg shadow-blue-900/50 flex items-center gap-2 transition-all active:scale-95">
                         📸 Scan
                     </button>
                 </div>
                 <div id="scanOverlay" class="hidden absolute inset-0 bg-black/80 z-20 flex flex-col items-center justify-center">
                     <div class="scanning-line w-full top-1/2"></div>
-                    <p class="text-xs font-bold text-blue-400 animate-pulse mt-4">Sedang Membaca...</p>
+                    <p class="text-sm font-bold text-blue-400 animate-pulse mt-4">Sedang Membaca...</p>
                 </div>
             </div>
 
-            <form id="healthForm" class="space-y-4">
-                <div class="bg-white p-5 rounded-xl card-shadow border border-slate-50">
-                    <h4 class="font-bold text-slate-700 mb-4 text-sm flex items-center gap-2">
-                        <span class="w-6 h-6 bg-red-100 text-red-600 rounded flex items-center justify-center text-xs">🩸</span>
-                        Ujian Darah Asas
+            <form id="healthForm" class="space-y-6">
+                <div class="bg-white p-6 rounded-2xl card-shadow border border-slate-100">
+                    <h4 class="font-bold text-slate-800 mb-5 text-base flex items-center gap-2">
+                        <span class="w-8 h-8 bg-red-100 text-red-600 rounded-lg flex items-center justify-center text-sm">🩸</span> Ujian Darah (FBC)
                     </h4>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase">Hb (g/dL)</label><input type="number" step="0.1" id="hb" class="w-full text-base font-semibold border-b border-slate-200 focus:border-blue-500 outline-none py-1 transition-all bg-transparent"></div>
-                        <div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase">WBC (10^9)</label><input type="number" step="0.1" id="wbc" class="w-full text-base font-semibold border-b border-slate-200 focus:border-blue-500 outline-none py-1 transition-all bg-transparent"></div>
+                    <div class="grid grid-cols-2 gap-x-6 gap-y-5">
+                        <div><label class="input-label">Hb (g/dL)</label><input type="number" step="0.1" id="hb" class="input-box" placeholder="13.0"></div>
+                        <div><label class="input-label">WBC (10^9)</label><input type="number" step="0.1" id="wbc" class="input-box" placeholder="6.0"></div>
+                        <div><label class="input-label">Platelet</label><input type="number" id="platelet" class="input-box" placeholder="250"></div>
+                        <div><label class="input-label">RBC</label><input type="number" step="0.1" id="rbc" class="input-box" placeholder="4.5"></div>
                     </div>
                 </div>
 
-                <div class="bg-white p-5 rounded-xl card-shadow border border-slate-50">
-                    <h4 class="font-bold text-slate-700 mb-4 text-sm flex items-center gap-2">
-                        <span class="w-6 h-6 bg-orange-100 text-orange-600 rounded flex items-center justify-center text-xs">🍬</span>
-                        Gula & HbA1c
+                <div class="bg-white p-6 rounded-2xl card-shadow border border-slate-100">
+                    <h4 class="font-bold text-slate-800 mb-5 text-base flex items-center gap-2">
+                        <span class="w-8 h-8 bg-orange-100 text-orange-600 rounded-lg flex items-center justify-center text-sm">🍬</span> Gula (Diabetes)
                     </h4>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase">Fasting (FBS)</label><input type="number" step="0.1" id="fbs" class="w-full text-base font-semibold border-b border-slate-200 focus:border-blue-500 outline-none py-1 transition-all bg-transparent"></div>
-                        <div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase">HbA1c (%)</label><input type="number" step="0.1" id="hba1c" class="w-full text-base font-semibold border-b border-slate-200 focus:border-blue-500 outline-none py-1 transition-all bg-transparent"></div>
+                    <div class="space-y-5">
+                        <div class="grid grid-cols-2 gap-x-6">
+                            <div><label class="input-label">Fasting (FBS)</label><input type="number" step="0.1" id="fbs" class="input-box" placeholder="5.0"></div>
+                            <div><label class="input-label">Random (RBS)</label><input type="number" step="0.1" id="rbs" class="input-box" placeholder="6.5"></div>
+                        </div>
+                        <div><label class="input-label">HbA1c (%)</label><input type="number" step="0.1" id="hba1c" class="input-box" placeholder="5.5"></div>
                     </div>
                 </div>
 
-                <div class="bg-white p-5 rounded-xl card-shadow border border-slate-50">
-                    <h4 class="font-bold text-slate-700 mb-4 text-sm flex items-center gap-2">
-                        <span class="w-6 h-6 bg-blue-100 text-blue-600 rounded flex items-center justify-center text-xs">🧠</span>
-                        Hati & Ginjal
+                <div class="bg-white p-6 rounded-2xl card-shadow border border-slate-100">
+                    <h4 class="font-bold text-slate-800 mb-5 text-base flex items-center gap-2">
+                        <span class="w-8 h-8 bg-yellow-100 text-yellow-600 rounded-lg flex items-center justify-center text-sm">🍔</span> Kolesterol (Lipid)
                     </h4>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase">ALT (U/L)</label><input type="number" id="alt" class="w-full text-base font-semibold border-b border-slate-200 focus:border-blue-500 outline-none py-1 transition-all bg-transparent"></div>
-                        <div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase">Creat (µmol/L)</label><input type="number" id="creat" class="w-full text-base font-semibold border-b border-slate-200 focus:border-blue-500 outline-none py-1 transition-all bg-transparent"></div>
+                    <div class="grid grid-cols-2 gap-x-6 gap-y-5">
+                        <div><label class="input-label">Total</label><input type="number" step="0.1" id="chol" class="input-box" placeholder="5.0"></div>
+                        <div><label class="input-label">Triglyc.</label><input type="number" step="0.1" id="trig" class="input-box" placeholder="1.5"></div>
+                        <div><label class="input-label">LDL (Jahat)</label><input type="number" step="0.1" id="ldl" class="input-box" placeholder="2.5"></div>
+                        <div><label class="input-label">HDL (Baik)</label><input type="number" step="0.1" id="hdl" class="input-box" placeholder="1.2"></div>
                     </div>
                 </div>
 
-                <button type="button" onclick="saveToGoogle()" id="btnSave" class="w-full bg-blue-600 text-white font-bold py-4 rounded-xl shadow-lg shadow-blue-200 hover:bg-blue-700 active:scale-95 transition-all mt-2">
-                    Simpan Rekod
-                </button>
+                <div class="bg-white p-6 rounded-2xl card-shadow border border-slate-100">
+                    <h4 class="font-bold text-slate-800 mb-5 text-base flex items-center gap-2">
+                        <span class="w-8 h-8 bg-purple-100 text-purple-600 rounded-lg flex items-center justify-center text-sm">🧠</span> Fungsi Hati
+                    </h4>
+                    <div class="grid grid-cols-2 gap-x-6 gap-y-5">
+                        <div><label class="input-label">ALT (SGPT)</label><input type="number" id="alt" class="input-box" placeholder="<41"></div>
+                        <div><label class="input-label">AST (SGOT)</label><input type="number" id="ast" class="input-box" placeholder="<40"></div>
+                        <div><label class="input-label">ALP</label><input type="number" id="alp" class="input-box" placeholder="30-120"></div>
+                        <div><label class="input-label">Bilirubin</label><input type="number" step="0.1" id="bili" class="input-box" placeholder="<21"></div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-2xl card-shadow border border-slate-100">
+                    <h4 class="font-bold text-slate-800 mb-5 text-base flex items-center gap-2">
+                        <span class="w-8 h-8 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center text-sm">💧</span> Buah Pinggang
+                    </h4>
+                    <div class="grid grid-cols-2 gap-x-6 gap-y-5">
+                        <div><label class="input-label">Creatinine</label><input type="number" id="creat" class="input-box" placeholder="60-110"></div>
+                        <div><label class="input-label">Urea</label><input type="number" step="0.1" id="urea" class="input-box" placeholder="1.7-8.3"></div>
+                        <div class="col-span-2"><label class="input-label">eGFR</label><input type="number" id="egfr" class="input-box" placeholder=">90"></div>
+                    </div>
+                </div>
+
+                <div class="pt-2">
+                    <button type="button" onclick="saveToGoogle()" id="btnSave" class="w-full bg-slate-900 text-white font-bold py-4 rounded-xl shadow-xl hover:bg-slate-800 active:scale-95 transition-all text-lg">
+                        Simpan Rekod
+                    </button>
+                    
+                    <a href="#" id="donateLink" target="_blank" class="mt-3 group flex items-center justify-center gap-2 w-full bg-yellow-400 hover:bg-yellow-300 text-yellow-900 font-bold py-3 rounded-xl shadow transition-all active:scale-95">
+                        <span class="text-xl">☕</span>
+                        <span class="text-sm">Buy me a coffee</span>
+                    </a>
+                </div>
             </form>
-
-            <div class="pt-8 pb-4">
-                <a href="#" id="donateLink" target="_blank" class="group block w-full bg-amber-300 hover:bg-amber-400 text-amber-900 rounded-xl p-4 text-center transition-all shadow-md active:scale-95">
-                    <div class="flex items-center justify-center gap-2">
-                        <span class="text-lg">☕</span>
-                        <span class="font-bold text-sm">Belanja Saya Kopi</span>
-                    </div>
-                    <p class="text-[10px] opacity-70 mt-1">Sokong pembangunan aplikasi percuma ini</p>
-                </a>
-            </div>
         </div>
 
         <div id="viewHistory" class="hidden px-5 py-6 space-y-4">
-            <button onclick="loadHistory()" class="w-full bg-white border border-blue-100 text-blue-600 text-xs font-bold py-3 rounded-xl hover:bg-blue-50">🔄 Refresh Data</button>
-            <div id="historyList" class="space-y-4 pb-20">
+            <button onclick="loadHistory()" class="w-full bg-white border-2 border-slate-100 text-slate-600 text-sm font-bold py-3 rounded-xl hover:bg-slate-50">🔄 Refresh Data Terkini</button>
+            <div id="historyList" class="space-y-6 pb-20">
                 <div class="flex flex-col items-center py-20 text-slate-400">
                     <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-4"></div>
-                    <p class="text-sm">Menyusun data anda...</p>
+                    <p class="text-sm font-semibold">Menyusun data anda...</p>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        // --- KONFIGURASI UTAMA ---
-        const CLIENT_ID = '30864450637-qaejqmqnq79jq2t7i188ka1fi32oc9m2.apps.googleusercontent.com'; // <--- PASTE CLIENT ID SINI
-        const DONATION_URL = 'https://www.buymeacoffee.com/'; // <--- NANTI GANTI URL INI
-
-        // Update Link Donation
+        const CLIENT_ID = '30864450637-qaejqmqnq79jq2t7i188ka1fi32oc9m2.apps.googleusercontent.com'; 
+        const DONATION_URL = 'https://www.buymeacoffee.com/puteraamirez'; // Ganti URL anda
         document.getElementById('donateLink').href = DONATION_URL;
 
         const SCOPES = 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive.file';
         
+        // --- SKALA KKM LENGKAP ---
+        // Format: min/max (Normal Range), start/end (Scale Bar Limits)
         const RANGES = {
-            fbs: { min: 3.9, max: 5.6, start: 3.0, end: 12.0, unit: 'mmol/L' },
-            hba1c: { min: 4.0, max: 5.7, start: 3.0, end: 10.0, unit: '%' },
-            alt: { min: 0, max: 41, start: 0, end: 100, unit: 'U/L' },
-            creat: { min: 60, max: 110, start: 30, end: 200, unit: 'µmol/L' }
+            fbs: { min: 3.9, max: 5.6, start: 2, end: 15, unit: 'mmol/L' },
+            rbs: { min: 3.9, max: 7.8, start: 2, end: 20, unit: 'mmol/L' },
+            hba1c: { min: 4.0, max: 5.7, start: 3, end: 12, unit: '%' },
+            
+            chol: { min: 0, max: 5.2, start: 2, end: 10, unit: 'mmol/L' },
+            ldl: { min: 0, max: 2.6, start: 1, end: 6, unit: 'mmol/L' },
+            hdl: { min: 1.0, max: 3.0, start: 0, end: 4, unit: 'mmol/L' }, // Min 1.0 is good
+            trig: { min: 0, max: 1.7, start: 0, end: 5, unit: 'mmol/L' },
+
+            alt: { min: 0, max: 41, start: 0, end: 150, unit: 'U/L' },
+            ast: { min: 0, max: 40, start: 0, end: 150, unit: 'U/L' },
+            bili: { min: 0, max: 21, start: 0, end: 50, unit: 'µmol/L' },
+            
+            creat: { min: 60, max: 110, start: 30, end: 300, unit: 'µmol/L' },
+            urea: { min: 1.7, max: 8.3, start: 0, end: 20, unit: 'mmol/L' },
+            egfr: { min: 90, max: 150, start: 30, end: 140, unit: 'mL/min' }
         };
 
         let tokenClient, accessToken = null;
 
-        function gapiLoaded() {
-            gapi.load('client', async () => { await gapi.client.init({ discoveryDocs: ["https://sheets.googleapis.com/$discovery/rest?version=v4", "https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"] }); });
-        }
-        function gisLoaded() {
-            tokenClient = google.accounts.oauth2.initTokenClient({
-                client_id: CLIENT_ID, scope: SCOPES,
-                callback: (resp) => {
-                    accessToken = resp.access_token;
-                    document.getElementById('loginScreen').classList.add('hidden');
-                    document.getElementById('mainApp').classList.remove('hidden');
-                    loadHistory();
-                },
-            });
-        }
+        function gapiLoaded() { gapi.load('client', async () => { await gapi.client.init({ discoveryDocs: ["https://sheets.googleapis.com/$discovery/rest?version=v4", "https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"] }); }); }
+        function gisLoaded() { tokenClient = google.accounts.oauth2.initTokenClient({ client_id: CLIENT_ID, scope: SCOPES, callback: (resp) => { accessToken = resp.access_token; document.getElementById('loginScreen').classList.add('hidden'); document.getElementById('mainApp').classList.remove('hidden'); loadHistory(); } }); }
         window.onload = () => { gapiLoaded(); gisLoaded(); };
         function handleAuthClick() { tokenClient.requestAccessToken({prompt: 'consent'}); }
 
-        // --- OCR LOGIC ---
+        // --- OCR & SAVE LOGIC ---
         async function processOCR() {
-            const fileInput = document.getElementById('ocrFile');
-            const file = fileInput.files[0];
+            const file = document.getElementById('ocrFile').files[0];
             if (!file) return;
-
             const btn = document.getElementById('btnScan');
             const overlay = document.getElementById('scanOverlay');
-            btn.disabled = true;
-            overlay.classList.remove('hidden');
+            btn.disabled = true; overlay.classList.remove('hidden');
 
             try {
-                const worker = Tesseract.createWorker({ logger: m => console.log(m) });
-                await worker.load();
-                await worker.loadLanguage('eng');
-                await worker.initialize('eng');
-                
+                const worker = Tesseract.createWorker();
+                await worker.load(); await worker.loadLanguage('eng'); await worker.initialize('eng');
                 const { data: { text } } = await worker.recognize(file);
                 await worker.terminate();
 
+                // Advanced Regex Mapping
                 extractValue(text, ['haemoglobin', 'hemoglobin', 'hb'], 'hb');
-                extractValue(text, ['white blood', 'wbc', 'leucocyte'], 'wbc');
-                extractValue(text, ['fasting', 'glucose', 'sugar', 'fbs'], 'fbs');
+                extractValue(text, ['white blood', 'wbc'], 'wbc');
+                extractValue(text, ['platelet', 'plt'], 'platelet');
+                extractValue(text, ['rbc', 'erythrocyte'], 'rbc');
+                
+                extractValue(text, ['fasting', 'fbs'], 'fbs');
                 extractValue(text, ['hba1c', 'a1c'], 'hba1c');
+                
+                extractValue(text, ['total cholesterol', 'cholesterol'], 'chol');
+                extractValue(text, ['triglyceride'], 'trig');
+                extractValue(text, ['ldl'], 'ldl');
+                extractValue(text, ['hdl'], 'hdl');
+
                 extractValue(text, ['alt', 'sgpt'], 'alt');
+                extractValue(text, ['ast', 'sgot'], 'ast');
                 extractValue(text, ['creatinine', 'creat'], 'creat');
+                extractValue(text, ['urea'], 'urea');
 
-                alert("✅ Siap imbas! Sila semak kotak input.");
-
-            } catch (err) {
-                console.error(err);
-                alert("❌ Gagal membaca gambar.");
-            } finally {
-                btn.disabled = false;
-                overlay.classList.add('hidden');
-                fileInput.value = ''; 
-            }
+                alert("✅ Siap! Sila semak semua kotak.");
+            } catch (err) { alert("❌ Gagal membaca."); } 
+            finally { btn.disabled = false; overlay.classList.add('hidden'); document.getElementById('ocrFile').value = ''; }
         }
 
         function extractValue(fullText, keywords, elementId) {
             const lines = fullText.split('\n');
             for (let line of lines) {
-                const lowerLine = line.toLowerCase();
-                if (keywords.some(key => lowerLine.includes(key))) {
+                if (keywords.some(key => line.toLowerCase().includes(key))) {
                     const match = line.match(/(\d+(\.\d+)?)/);
                     if (match) {
                         const el = document.getElementById(elementId);
-                        if (el) {
-                            el.value = match[0];
-                            el.style.backgroundColor = "#dbeafe";
-                            setTimeout(() => el.style.backgroundColor = "transparent", 3000);
-                            return; 
-                        }
+                        if (el) { el.value = match[0]; el.style.backgroundColor = "#dbeafe"; setTimeout(() => el.style.backgroundColor = "transparent", 3000); return; }
                     }
                 }
             }
-        }
-
-        // --- NAVIGATION ---
-        function switchTab(tab) {
-            const views = ['viewInput', 'viewHistory'];
-            const tabs = ['tabInput', 'tabHistory'];
-            views.forEach(v => document.getElementById(v).classList.add('hidden'));
-            tabs.forEach(t => document.getElementById(t).classList.remove('tab-active', 'text-blue-600'));
-            
-            document.getElementById('view' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.remove('hidden');
-            const activeTab = document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1));
-            activeTab.classList.add('tab-active', 'text-blue-600');
-            activeTab.classList.remove('text-slate-400');
-            
-            if(tab === 'history') loadHistory();
         }
 
         // --- SAVE TO GOOGLE ---
@@ -254,60 +259,105 @@
             try {
                 let response = await gapi.client.drive.files.list({ q: "name = 'MyHealth_Records' and trashed = false", fields: 'files(id)' });
                 let sheetId;
+                
+                // HEADER BARU (18 Columns)
+                const HEADERS = ['Tarikh', 'Hb', 'WBC', 'Platelet', 'RBC', 'FBS', 'RBS', 'HbA1c', 'Chol', 'Trig', 'LDL', 'HDL', 'ALT', 'AST', 'ALP', 'Bili', 'Creat', 'Urea', 'eGFR'];
+
                 if (response.result.files.length > 0) {
                     sheetId = response.result.files[0].id;
                 } else {
                     const createResp = await gapi.client.sheets.spreadsheets.create({ resource: { properties: { title: 'MyHealth_Records' }, sheets: [{ properties: { title: 'Data' } }] } });
                     sheetId = createResp.result.spreadsheetId;
-                    await gapi.client.sheets.spreadsheets.values.append({ spreadsheetId: sheetId, range: 'Data!A1', valueInputOption: 'RAW', resource: { values: [['Tarikh', 'Hb', 'WBC', 'FBS', 'HbA1c', 'ALT', 'Creat']] } });
+                    await gapi.client.sheets.spreadsheets.values.append({ spreadsheetId: sheetId, range: 'Data!A1', valueInputOption: 'RAW', resource: { values: [HEADERS] } });
                 }
-                const rowData = [ new Date().toLocaleDateString('ms-MY'), val('hb'), val('wbc'), val('fbs'), val('hba1c'), val('alt'), val('creat') ];
+
+                const rowData = [
+                    new Date().toLocaleDateString('ms-MY'),
+                    val('hb'), val('wbc'), val('platelet'), val('rbc'),
+                    val('fbs'), val('rbs'), val('hba1c'),
+                    val('chol'), val('trig'), val('ldl'), val('hdl'),
+                    val('alt'), val('ast'), val('alp'), val('bili'),
+                    val('creat'), val('urea'), val('egfr')
+                ];
+
                 await gapi.client.sheets.spreadsheets.values.append({ spreadsheetId: sheetId, range: 'Data!A1', valueInputOption: 'RAW', resource: { values: [rowData] } });
-                alert("✅ Berjaya disimpan!"); document.getElementById('healthForm').reset(); switchTab('history');
-            } catch (err) { alert("❌ Ralat: " + JSON.stringify(err)); }
+                alert("✅ Rekod Disimpan!"); document.getElementById('healthForm').reset(); switchTab('history');
+            } catch (err) { alert("❌ Ralat: " + err.message); }
             btn.innerText = "Simpan Rekod"; btn.disabled = false;
         }
         function val(id) { return document.getElementById(id).value || '-'; }
 
-        // --- HISTORY VIEW ---
+        // --- HISTORY DISPLAY ---
         async function loadHistory() {
             const list = document.getElementById('historyList');
             try {
                 let response = await gapi.client.drive.files.list({ q: "name = 'MyHealth_Records' and trashed = false", fields: 'files(id)' });
                 if (response.result.files.length === 0) { list.innerHTML = '<p class="text-center py-20 text-slate-400">Tiada data.</p>'; return; }
-                let dataResp = await gapi.client.sheets.spreadsheets.values.get({ spreadsheetId: response.result.files[0].id, range: 'Data!A2:G50' });
+                
+                // Fetch columns A to S (19 cols)
+                let dataResp = await gapi.client.sheets.spreadsheets.values.get({ spreadsheetId: response.result.files[0].id, range: 'Data!A2:S50' });
                 let rows = dataResp.result.values;
                 if (!rows) { list.innerHTML = '<p class="text-center py-20 text-slate-400">Tiada rekod.</p>'; return; }
 
                 list.innerHTML = rows.reverse().map(row => `
-                    <div class="bg-white rounded-xl p-5 card-shadow border border-slate-50">
-                        <div class="flex justify-between items-center mb-4">
-                            <span class="text-[10px] font-extrabold text-blue-600 bg-blue-50 px-2 py-1 rounded uppercase tracking-widest">${row[0]}</span>
+                    <div class="bg-white rounded-2xl p-6 card-shadow border border-slate-50">
+                        <div class="flex justify-between items-center mb-6 border-b border-slate-100 pb-4">
+                            <span class="text-xs font-extrabold text-blue-600 bg-blue-50 px-3 py-1 rounded-full uppercase">${row[0]}</span>
                         </div>
-                        <div class="space-y-5">
-                            ${renderScaleCard('Gula (FBS)', row[3], 'fbs')}
-                            ${renderScaleCard('HbA1c', row[4], 'hba1c')}
-                            ${renderScaleCard('Hati (ALT)', row[5], 'alt')}
-                            ${renderScaleCard('Ginjal (Creat)', row[6], 'creat')}
+                        <div class="space-y-6">
+                            ${renderScaleCard('Gula (FBS)', row[5], 'fbs')}
+                            ${renderScaleCard('HbA1c', row[7], 'hba1c')}
+                            ${renderScaleCard('LDL (Jahat)', row[10], 'ldl')}
+                            ${renderScaleCard('Hati (ALT)', row[12], 'alt')}
+                            ${renderScaleCard('Ginjal (Creat)', row[16], 'creat')}
                         </div>
                     </div>
                 `).join('');
-            } catch (err) { list.innerHTML = 'Ralat muat data.'; }
+            } catch (err) { list.innerHTML = 'Gagal muat data.'; }
         }
 
         function renderScaleCard(label, value, type) {
             if (value === '-' || !value) return '';
             const val = parseFloat(value); const cfg = RANGES[type];
+            if (!cfg) return ''; // Skip if no range config
+
             let pos = ((val - cfg.start) / (cfg.end - cfg.start)) * 100; pos = Math.max(0, Math.min(100, pos));
             const normalStart = ((cfg.min - cfg.start) / (cfg.end - cfg.start)) * 100;
             const normalWidth = ((cfg.max - cfg.min) / (cfg.end - cfg.start)) * 100;
-            const isNormal = val >= cfg.min && val <= cfg.max;
+            
+            // Logic HDL (Higher is better) vs others
+            let isNormal = (type === 'hdl') ? (val >= cfg.min) : (val >= cfg.min && val <= cfg.max);
             const statusColor = isNormal ? 'text-green-600' : 'text-red-500';
+
             return `
-                <div class="space-y-1">
-                    <div class="flex justify-between items-end"><p class="text-[10px] font-bold text-slate-400 uppercase tracking-tight">${label}</p><p class="text-base font-extrabold ${statusColor}">${val} <span class="text-[9px] text-slate-400">${cfg.unit}</span></p></div>
-                    <div class="scale-line"><div class="zone-normal" style="left: ${normalStart}%; width: ${normalWidth}%"></div><div class="scale-marker" style="left: ${pos}%"></div></div>
+                <div>
+                    <div class="flex justify-between items-end mb-1">
+                        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">${label}</p>
+                        <p class="text-xl font-extrabold ${statusColor}">${val} <span class="text-xs text-slate-400 font-normal">${cfg.unit}</span></p>
+                    </div>
+                    <div class="scale-line">
+                        <div class="zone-normal" style="left: ${normalStart}%; width: ${normalWidth}%"></div>
+                        <div class="scale-marker" style="left: ${pos}%"></div>
+                    </div>
+                    <div class="flex justify-between text-[10px] font-bold text-slate-300 mt-1">
+                        <span>${cfg.start}</span>
+                        <span>Rujukan: ${cfg.min}-${cfg.max}</span>
+                        <span>${cfg.end}</span>
+                    </div>
                 </div>`;
+        }
+        
+        // --- TABS ---
+        function switchTab(tab) {
+            document.getElementById('viewInput').classList.add('hidden');
+            document.getElementById('viewHistory').classList.add('hidden');
+            document.getElementById('tabInput').classList.remove('tab-active', 'text-blue-600');
+            document.getElementById('tabHistory').classList.remove('tab-active', 'text-blue-600');
+
+            document.getElementById('view' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.remove('hidden');
+            const active = document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1));
+            active.classList.add('tab-active', 'text-blue-600');
+            if(tab === 'history') loadHistory();
         }
     </script>
 </body>
