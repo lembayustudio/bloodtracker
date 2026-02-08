@@ -3,164 +3,179 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MyHealth PWA</title>
+    <title>BloodTracker PWA</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="manifest" href="manifest.json">
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://apis.google.com/js/api.js" async defer></script>
+    <style>
+        .hidden { display: none; }
+        .active-tab { border-bottom: 3px solid #2563eb; color: #2563eb; }
+    </style>
 </head>
-<body class="bg-slate-50 pb-10">
-    <nav class="bg-white border-b p-4 sticky top-0 z-50">
-        <div class="max-w-md mx-auto flex justify-between items-center">
-            <h1 class="text-xl font-bold text-blue-600">MyHealth</h1>
-            <button id="authBtn" onclick="handleAuthClick()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm">
-                Login Google
+<body class="bg-slate-50">
+
+    <div id="loginPage" class="min-h-screen flex flex-col items-center justify-center p-6 text-center">
+        <div class="bg-white p-8 rounded-3xl shadow-xl w-full max-w-md">
+            <h1 class="text-3xl font-bold text-blue-600 mb-2">BloodTracker</h1>
+            <p class="text-gray-500 mb-8">Sila log masuk untuk mengurus rekod kesihatan anda dengan selamat di Google Drive.</p>
+            <button onclick="handleAuthClick()" class="w-full flex items-center justify-center gap-3 bg-white border border-gray-300 py-3 rounded-xl font-semibold shadow-sm hover:bg-gray-50 transition">
+                <img src="https://www.google.com/favicon.ico" class="w-5 h-5">
+                Log Masuk dengan Google
             </button>
         </div>
-    </nav>
+    </div>
 
-    <main class="max-w-md mx-auto p-4 space-y-6">
-        <div id="status" class="hidden p-3 bg-green-100 text-green-700 rounded-lg text-xs text-center">
-            Terhubung dengan Google Drive anda.
+    <div id="mainApp" class="hidden min-h-screen pb-20">
+        <nav class="bg-white border-b p-4 sticky top-0 z-50 flex justify-between items-center shadow-sm">
+            <span class="font-bold text-blue-600">BloodTracker</span>
+            <div id="userProfile" class="text-xs font-medium text-gray-600"></div>
+        </nav>
+
+        <div class="flex bg-white border-b">
+            <button onclick="showTab('inputTab')" id="btnInput" class="flex-1 py-3 font-semibold active-tab">Rekod Baru</button>
+            <button onclick="showTab('historyTab')" id="btnHistory" class="flex-1 py-3 font-semibold text-gray-400">Sejarah</button>
         </div>
 
-        <div class="bg-white p-5 rounded-2xl shadow-sm border space-y-4">
-            <h3 class="font-bold border-b pb-2">🩸 Ujian Darah Asas (FBC)</h3>
-            <div class="grid grid-cols-2 gap-4">
-                <input type="number" id="hb" placeholder="Hb (g/dL)" class="border-b p-2 focus:outline-none">
-                <input type="number" id="wbc" placeholder="WBC (10^9/L)" class="border-b p-2 focus:outline-none">
-                <input type="number" id="platelet" placeholder="Platelet" class="border-b p-2 focus:outline-none">
-                <select id="bloodGroup" class="border-b p-2 bg-transparent text-gray-500">
-                    <option value="">Kump. Darah</option>
-                    <option>A+</option><option>O+</option><option>B+</option><option>AB+</option>
-                </select>
+        <main class="max-w-md mx-auto p-4">
+            
+            <div id="inputTab" class="space-y-6">
+                <div class="bg-blue-50 border-2 border-dashed border-blue-200 p-6 rounded-2xl text-center">
+                    <input type="file" id="cameraInput" accept="image/*" capture="environment" class="hidden">
+                    <label for="cameraInput" class="cursor-pointer">
+                        <div class="bg-blue-600 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-2 text-white shadow-lg">📸</div>
+                        <p class="text-sm font-bold text-blue-700">Snap Gambar Result</p>
+                        <p class="text-xs text-blue-500">Auto-fill data (Akan datang)</p>
+                    </label>
+                </div>
+
+                <div class="bg-white p-5 rounded-2xl shadow-sm border space-y-4">
+                    <h3 class="font-bold border-b pb-2 flex items-center gap-2">🩸 Profil Darah Lengkap</h3>
+                    <div class="grid grid-cols-2 gap-4 text-sm">
+                        <div><label class="text-[10px] text-gray-400 uppercase">Hb (g/dL)</label><input type="number" id="hb" class="w-full border-b py-1 outline-none"></div>
+                        <div><label class="text-[10px] text-gray-400 uppercase">WBC (10^9/L)</label><input type="number" id="wbc" class="w-full border-b py-1 outline-none"></div>
+                        <div><label class="text-[10px] text-gray-400 uppercase">Platelet</label><input type="number" id="platelet" class="w-full border-b py-1 outline-none"></div>
+                        <div><label class="text-[10px] text-gray-400 uppercase">Kump. Darah</label>
+                            <select id="bloodGroup" class="w-full border-b py-1 outline-none bg-transparent">
+                                <option value="">- Pilih -</option>
+                                <option>A+</option><option>O+</option><option>B+</option><option>AB+</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-5 rounded-2xl shadow-sm border space-y-4">
+                    <h3 class="font-bold border-b pb-2">🍬 Gula & Kolesterol</h3>
+                    <div class="space-y-3">
+                        <div><label class="text-[10px] text-gray-400 uppercase text-xs">Fasting Blood Sugar (mmol/L)</label><input type="number" id="fbs" class="w-full border-b py-1 outline-none"></div>
+                        <div><label class="text-[10px] text-gray-400 uppercase text-xs">HbA1c (%)</label><input type="number" id="hba1c" class="w-full border-b py-1 outline-none"></div>
+                        <div><label class="text-[10px] text-gray-400 uppercase text-xs">Total Cholesterol (mmol/L)</label><input type="number" id="chol" class="w-full border-b py-1 outline-none"></div>
+                    </div>
+                </div>
+
+                <button onclick="saveToGoogle()" id="saveBtn" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold shadow-lg active:scale-95 transition">
+                    Simpan ke Google Drive
+                </button>
             </div>
-        </div>
 
-        <div class="bg-white p-5 rounded-2xl shadow-sm border space-y-4">
-            <h3 class="font-bold border-b pb-2">🍬 Gula & Kolesterol</h3>
-            <input type="number" id="fbs" placeholder="Fasting Glucose (mmol/L)" class="w-full border-b p-2">
-            <input type="number" id="hba1c" placeholder="HbA1c (%)" class="w-full border-b p-2">
-            <input type="number" id="chol" placeholder="Total Cholesterol (mmol/L)" class="w-full border-b p-2">
-        </div>
-
-        <button onclick="saveToGoogle()" id="saveBtn" class="w-full bg-green-600 text-white py-4 rounded-xl font-bold shadow-lg">
-            Simpan ke Google Sheet
-        </button>
-
-        <a href="URL_DONATION_ANDA" target="_blank" class="block w-full bg-yellow-400 text-center py-3 rounded-xl font-bold text-yellow-900 mt-10">
-            ☕ Belanja Saya Kopi
-        </a>
-    </main>
+            <div id="historyTab" class="hidden space-y-4">
+                <button onclick="loadHistory()" class="text-blue-600 text-sm font-medium mb-2 flex items-center gap-1">🔄 Refresh Sejarah</button>
+                <div id="historyList" class="space-y-3">
+                    <p class="text-center text-gray-400 py-10 text-sm">Memuatkan data...</p>
+                </div>
+            </div>
+        </main>
+    </div>
 
     <script>
-    const CLIENT_ID = '30864450637-qaejqmqnq79jq2t7i188ka1fi32oc9m2.apps.googleusercontent.com';
-    const SCOPES = 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive.file';
-    
-    let tokenClient;
-    let accessToken = null;
+        const CLIENT_ID = '30864450637-qaejqmqnq79jq2t7i188ka1fi32oc9m2.apps.googleusercontent.com';
+        const SCOPES = 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive.file';
+        let accessToken = null;
+        let tokenClient;
 
-    // 1. Inisialisasi API Google
-    function gapiLoaded() {
-        gapi.load('client', async () => {
-            await gapi.client.init({
-                discoveryDocs: ["https://sheets.googleapis.com/$discovery/rest?version=v4", "https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"],
+        // --- AUTH LOGIC ---
+        function gapiLoaded() {
+            gapi.load('client', async () => {
+                await gapi.client.init({ discoveryDocs: ["https://sheets.googleapis.com/$discovery/rest?version=v4", "https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"] });
             });
-        });
-    }
-
-    function gisLoaded() {
-        tokenClient = google.accounts.oauth2.initTokenClient({
-            client_id: CLIENT_ID,
-            scope: SCOPES,
-            callback: (tokenResponse) => {
-                if (tokenResponse.error) return;
-                accessToken = tokenResponse.access_token;
-                document.getElementById('authBtn').innerText = "✅ Connected";
-                document.getElementById('status').classList.remove('hidden');
-            },
-        });
-    }
-
-    window.onload = () => { gapiLoaded(); gisLoaded(); };
-
-    function handleAuthClick() {
-        tokenClient.requestAccessToken({prompt: 'consent'});
-    }
-
-    // 2. Fungsi Utama: Simpan Data ke Google Sheets
-    async function saveToGoogle() {
-        if (!accessToken) {
-            alert("Sila Login Google dahulu!");
-            handleAuthClick();
-            return;
         }
 
-        const btn = document.getElementById('saveBtn');
-        btn.innerText = "⏳ Memproses...";
-        btn.disabled = true;
-
-        try {
-            // A. Cari fail MyHealth_Records
-            let response = await gapi.client.drive.files.list({
-                q: "name = 'MyHealth_Records' and mimeType = 'application/vnd.google-apps.spreadsheet'",
-                fields: 'files(id)'
+        function gisLoaded() {
+            tokenClient = google.accounts.oauth2.initTokenClient({
+                client_id: CLIENT_ID, scope: SCOPES,
+                callback: (tokenResponse) => {
+                    accessToken = tokenResponse.access_token;
+                    document.getElementById('loginPage').classList.add('hidden');
+                    document.getElementById('mainApp').classList.remove('hidden');
+                    loadHistory();
+                },
             });
+        }
 
-            let sheetId;
-            if (response.result.files.length > 0) {
-                sheetId = response.result.files[0].id;
-            } else {
-                // B. Jika tiada, cipta fail baru
-                const createResp = await gapi.client.sheets.spreadsheets.create({
-                    resource: {
-                        properties: { title: 'MyHealth_Records' },
-                        sheets: [{ properties: { title: 'RekodUjian' } }]
-                    }
-                });
-                sheetId = createResp.result.spreadsheetId;
-                
-                // Masukkan Header
-                await gapi.client.sheets.spreadsheets.values.append({
-                    spreadsheetId: sheetId,
-                    range: 'RekodUjian!A1',
-                    valueInputOption: 'RAW',
-                    resource: { values: [['Tarikh', 'Hb', 'WBC', 'Platelet', 'Kump.Darah', 'Gula(FBS)', 'HbA1c', 'Kolesterol']] }
-                });
-            }
+        window.onload = () => { gapiLoaded(); gisLoaded(); };
+        function handleAuthClick() { tokenClient.requestAccessToken({prompt: 'consent'}); }
 
-            // C. Kumpul data dari borang
-            const rowData = [
-                new Date().toLocaleString(),
-                document.getElementById('hb').value,
-                document.getElementById('wbc').value,
-                document.getElementById('platelet').value,
-                document.getElementById('bloodGroup').value,
-                document.getElementById('fbs').value,
-                document.getElementById('hba1c').value,
-                document.getElementById('chol').value
-            ];
+        // --- TAB LOGIC ---
+        function showTab(tabId) {
+            document.getElementById('inputTab').classList.add('hidden');
+            document.getElementById('historyTab').classList.add('hidden');
+            document.getElementById(tabId).classList.remove('hidden');
+            document.getElementById('btnInput').classList.remove('active-tab', 'text-blue-600');
+            document.getElementById('btnHistory').classList.remove('active-tab', 'text-blue-600');
+            if(tabId === 'inputTab') document.getElementById('btnInput').classList.add('active-tab');
+            else { document.getElementById('btnHistory').classList.add('active-tab'); loadHistory(); }
+        }
 
-            // D. Masukkan data ke baris baru
-            await gapi.client.sheets.spreadsheets.values.append({
-                spreadsheetId: sheetId,
-                range: 'RekodUjian!A1',
-                valueInputOption: 'RAW',
-                resource: { values: [rowData] }
-            });
-
-            alert("Berjaya! Data telah disimpan ke Google Drive anda.");
-            // Reset borang
-            document.querySelectorAll('input').forEach(input => input.value = '');
+        // --- DATA LOGIC ---
+        async function getSheetId() {
+            let response = await gapi.client.drive.files.list({ q: "name = 'MyHealth_Records'", fields: 'files(id)' });
+            if (response.result.files.length > 0) return response.result.files[0].id;
             
-        } catch (err) {
-            console.error(err);
-            alert("Ralat: " + err.result.error.message);
-        } finally {
-            btn.innerText = "Simpan ke Google Sheet";
-            btn.disabled = false;
+            const createResp = await gapi.client.sheets.spreadsheets.create({ resource: { properties: { title: 'MyHealth_Records' }, sheets: [{ properties: { title: 'RekodUjian' } }] } });
+            let newId = createResp.result.spreadsheetId;
+            await gapi.client.sheets.spreadsheets.values.append({
+                spreadsheetId: newId, range: 'RekodUjian!A1', valueInputOption: 'RAW',
+                resource: { values: [['Tarikh', 'Hb', 'WBC', 'Platelet', 'Kump.Darah', 'Gula', 'HbA1c', 'Kolesterol']] }
+            });
+            return newId;
         }
-    }
-</script>
+
+        async function saveToGoogle() {
+            const btn = document.getElementById('saveBtn');
+            btn.innerText = "⏳ Menyimpan...";
+            try {
+                let sheetId = await getSheetId();
+                const row = [new Date().toLocaleDateString(), document.getElementById('hb').value, document.getElementById('wbc').value, document.getElementById('platelet').value, document.getElementById('bloodGroup').value, document.getElementById('fbs').value, document.getElementById('hba1c').value, document.getElementById('chol').value];
+                await gapi.client.sheets.spreadsheets.values.append({ spreadsheetId: sheetId, range: 'RekodUjian!A1', valueInputOption: 'RAW', resource: { values: [row] } });
+                alert("Data disimpan!");
+                showTab('historyTab');
+            } catch (err) { alert("Ralat simpan!"); }
+            btn.innerText = "Simpan ke Google Drive";
+        }
+
+        async function loadHistory() {
+            const container = document.getElementById('historyList');
+            try {
+                let sheetId = await getSheetId();
+                let response = await gapi.client.sheets.spreadsheets.values.get({ spreadsheetId: sheetId, range: 'RekodUjian!A2:H100' });
+                const rows = response.result.values;
+                if (!rows) { container.innerHTML = "<p class='text-center text-gray-400 py-10'>Tiada rekod dijumpai.</p>"; return; }
+                
+                container.innerHTML = rows.reverse().map(row => `
+                    <div class="bg-white p-4 rounded-xl shadow-sm border border-l-4 border-l-blue-500">
+                        <div class="flex justify-between mb-2">
+                            <span class="text-[10px] font-bold text-gray-400 uppercase">${row[0]}</span>
+                            <span class="text-[10px] bg-blue-100 text-blue-700 px-2 rounded-full uppercase font-bold">${row[4] || '-'}</span>
+                        </div>
+                        <div class="grid grid-cols-3 gap-2 text-xs">
+                            <div><p class="text-gray-400">Hb</p><p class="font-bold">${row[1] || '-'}</p></div>
+                            <div><p class="text-gray-400">Gula</p><p class="font-bold text-red-600">${row[5] || '-'}</p></div>
+                            <div><p class="text-gray-400">Kolest.</p><p class="font-bold">${row[7] || '-'}</p></div>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (err) { container.innerHTML = "Gagal memuatkan sejarah."; }
+        }
+    </script>
 </body>
 </html>
