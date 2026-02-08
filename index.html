@@ -5,330 +5,289 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>BloodTracker Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="manifest" href="manifest.json">
+    <script src='https://unpkg.com/tesseract.js@v2.1.0/dist/tesseract.min.js'></script>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://apis.google.com/js/api.js" async defer></script>
+    <link rel="manifest" href="manifest.json">
+    
     <style>
-        body { -webkit-tap-highlight-color: transparent; }
-        .tab-active { border-bottom: 3px solid #2563eb; color: #2563eb; font-weight: bold; }
-        .input-group { background: white; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 15px; }
-        .input-label { font-size: 0.75rem; color: #64748b; text-transform: uppercase; font-weight: 600; margin-bottom: 4px; display: block; }
-        .input-field { width: 100%; border-bottom: 1px solid #cbd5e1; padding: 5px 0; outline: none; font-size: 1rem; color: #1e293b; background: transparent; }
-        .input-field:focus { border-color: #2563eb; }
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
+        .tab-active { color: #2563eb; position: relative; }
+        .tab-active::after { content: ''; position: absolute; bottom: 0; left: 25%; width: 50%; height: 3px; background: #2563eb; border-radius: 10px; }
+        .card-shadow { box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05); }
+        .scale-line { height: 6px; background: #e2e8f0; border-radius: 10px; position: relative; margin-top: 8px; }
+        .scale-marker { width: 12px; height: 12px; background: #2563eb; border-radius: 50%; position: absolute; top: -3px; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: all 0.3s ease; }
+        .zone-normal { position: absolute; height: 100%; background: #22c55e; opacity: 0.3; border-radius: 2px; }
+        /* Animasi Loading Scan */
+        @keyframes scan { 0% { top: 0%; } 50% { top: 100%; } 100% { top: 0%; } }
+        .scanning-line { position: absolute; width: 100%; height: 2px; background: #3b82f6; animation: scan 2s infinite linear; box-shadow: 0 0 10px #3b82f6; }
     </style>
 </head>
-<body class="bg-slate-100 text-slate-800 font-sans">
+<body class="bg-[#F8FAFC] text-slate-900">
 
-    <div id="loginScreen" class="min-h-screen flex flex-col items-center justify-center p-6 bg-white absolute inset-0 z-50">
-        <div class="w-20 h-20 bg-blue-600 rounded-full flex items-center justify-center mb-6 shadow-blue-200 shadow-xl">
-            <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.384-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+    <div id="loginScreen" class="min-h-screen flex flex-col items-center justify-center p-8 bg-white fixed inset-0 z-[100]">
+        <div class="w-24 h-24 bg-gradient-to-tr from-blue-600 to-indigo-600 rounded-[2rem] flex items-center justify-center mb-8 shadow-2xl shadow-blue-200 rotate-12">
+            <svg class="w-12 h-12 text-white -rotate-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
         </div>
-        <h1 class="text-2xl font-bold text-slate-800 mb-2">BloodTracker Pro</h1>
-        <p class="text-slate-500 text-center text-sm mb-8">Rekod, Pantau & Analisis Kesihatan Anda<br>Simpanan Selamat di Google Drive</p>
-        <button onclick="handleAuthClick()" class="w-full max-w-xs bg-white border border-slate-300 text-slate-700 font-semibold py-3 px-4 rounded-xl shadow-sm flex items-center justify-center gap-3 hover:bg-slate-50 transition">
-            <img src="https://www.google.com/favicon.ico" class="w-5 h-5"> Login Google
+        <h1 class="text-3xl font-extrabold tracking-tight mb-2">BloodTracker<span class="text-blue-600">.</span></h1>
+        <p class="text-slate-500 text-center text-sm mb-12 leading-relaxed">Pantau trend kesihatan anda dengan analisis visual pintar.</p>
+        <button onclick="handleAuthClick()" class="w-full max-w-xs bg-slate-900 text-white font-bold py-4 px-6 rounded-2xl shadow-xl flex items-center justify-center gap-3 active:scale-95 transition-all">
+            <img src="https://www.google.com/favicon.ico" class="w-5 h-5 brightness-200"> Log Masuk Google
         </button>
     </div>
 
-    <div id="mainApp" class="hidden max-w-md mx-auto min-h-screen bg-slate-50 pb-24 shadow-2xl relative">
+    <div id="mainApp" class="hidden max-w-md mx-auto min-h-screen pb-32 relative">
         
-        <div class="bg-white px-5 py-4 sticky top-0 z-40 shadow-sm flex justify-between items-center">
-            <h1 class="text-lg font-bold text-blue-600 flex items-center gap-2">
-                BloodTracker <span class="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">BETA</span>
-            </h1>
-            <div id="statusInd" class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+        <header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 px-6 py-4 flex justify-between items-center border-b border-slate-100">
+            <div>
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Dashboard</p>
+                <h1 class="text-xl font-extrabold text-slate-800">Utama</h1>
+            </div>
+            <div id="userAvatar" class="w-10 h-10 bg-blue-100 rounded-full border-2 border-white shadow-sm overflow-hidden flex items-center justify-center font-bold text-blue-600">User</div>
+        </header>
+
+        <div class="flex bg-white px-2 py-1 mb-6 border-b border-slate-100">
+            <button onclick="switchTab('input')" id="tabInput" class="flex-1 py-4 text-sm font-bold text-slate-400 tab-active">Rekod Baru</button>
+            <button onclick="switchTab('history')" id="tabHistory" class="flex-1 py-4 text-sm font-bold text-slate-400">Analisis Trend</button>
         </div>
 
-        <div class="flex bg-white border-b border-slate-200 sticky top-14 z-30">
-            <button onclick="switchTab('input')" id="tabInput" class="flex-1 py-3 text-sm text-slate-500 tab-active">Kemasukan Data</button>
-            <button onclick="switchTab('history')" id="tabHistory" class="flex-1 py-3 text-sm text-slate-500">Rekod & Analisis</button>
-        </div>
-
-        <div id="viewInput" class="p-4 space-y-4 animate-fade-in">
-            
-            <div class="bg-blue-600 rounded-xl p-5 text-white shadow-lg mb-6">
-                <h3 class="font-bold text-lg">Keputusan Baru</h3>
-                <p class="text-blue-100 text-xs mb-4">Masukkan data dari laporan makmal anda.</p>
-                <div class="flex gap-2">
-                    <button class="flex-1 bg-white/20 hover:bg-white/30 py-2 rounded-lg text-xs font-semibold backdrop-blur-sm border border-white/30">
-                        📸 Scan (OCR)
+        <div id="viewInput" class="px-6 space-y-6 animate-in slide-in-from-bottom-4 duration-500">
+            <div class="bg-gradient-to-br from-slate-900 to-slate-800 rounded-[2rem] p-6 text-white card-shadow relative overflow-hidden group">
+                <div class="relative z-10">
+                    <h3 class="font-bold text-lg mb-1">Imbas Keputusan</h3>
+                    <p class="text-slate-400 text-xs mb-5">AI akan membaca gambar laporan anda.</p>
+                    <input type="file" id="ocrFile" accept="image/*" class="hidden" onchange="processOCR()">
+                    <button id="btnScan" onclick="document.getElementById('ocrFile').click()" class="bg-blue-600 hover:bg-blue-700 px-6 py-2.5 rounded-xl text-xs font-bold transition-all shadow-lg shadow-blue-900/20 flex items-center gap-2">
+                        <span>📸 Ambil Gambar</span>
                     </button>
-                    <button onclick="clearForm()" class="px-4 bg-white/20 hover:bg-white/30 py-2 rounded-lg text-xs font-semibold backdrop-blur-sm border border-white/30">
-                        Reset
-                    </button>
+                </div>
+                <div id="scanOverlay" class="hidden absolute inset-0 bg-black/50 z-20 flex items-center justify-center">
+                    <div class="scanning-line"></div>
+                    <p class="text-xs font-bold animate-pulse">Sedang Membaca...</p>
                 </div>
             </div>
 
-            <form id="healthForm" onsubmit="event.preventDefault(); saveToGoogle();">
-                
-                <div class="input-group">
-                    <h4 class="font-bold text-slate-700 mb-4 border-b pb-2 flex items-center gap-2">🩸 Darah (FBC)</h4>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div><label class="input-label">Hb (g/dL)</label><input type="number" step="0.1" id="hb" class="input-field" placeholder="12.0 - 17.0"></div>
-                        <div><label class="input-label">WBC (10^9)</label><input type="number" step="0.1" id="wbc" class="input-field" placeholder="4.0 - 11.0"></div>
-                        <div><label class="input-label">Platelet</label><input type="number" id="platelet" class="input-field" placeholder="150 - 400"></div>
-                        <div><label class="input-label">RBC</label><input type="number" step="0.1" id="rbc" class="input-field" placeholder="4.0 - 6.0"></div>
+            <form id="healthForm" class="space-y-4">
+                <div class="bg-white p-6 rounded-[2rem] card-shadow border border-slate-50">
+                    <h4 class="font-bold text-slate-800 mb-6 flex items-center gap-2">
+                        <span class="w-8 h-8 bg-red-50 text-red-500 rounded-lg flex items-center justify-center text-sm">🩸</span>
+                        Ujian Darah Asas
+                    </h4>
+                    <div class="grid grid-cols-2 gap-x-6 gap-y-4">
+                        <div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase">Hb (g/dL)</label><input type="number" step="0.1" id="hb" class="w-full text-lg font-bold border-b-2 border-slate-100 focus:border-blue-500 outline-none pb-1 transition-all"></div>
+                        <div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase">WBC (10^9)</label><input type="number" step="0.1" id="wbc" class="w-full text-lg font-bold border-b-2 border-slate-100 focus:border-blue-500 outline-none pb-1"></div>
                     </div>
                 </div>
 
-                <div class="input-group">
-                    <h4 class="font-bold text-slate-700 mb-4 border-b pb-2 flex items-center gap-2">🍬 Diabetes / Gula</h4>
-                    <div class="space-y-3">
-                        <div class="grid grid-cols-2 gap-4">
-                            <div><label class="input-label">Fasting (FBS)</label><input type="number" step="0.1" id="fbs" class="input-field" placeholder="mmol/L"></div>
-                            <div><label class="input-label">Random (RBS)</label><input type="number" step="0.1" id="rbs" class="input-field" placeholder="mmol/L"></div>
-                        </div>
-                        <div><label class="input-label">HbA1c (%)</label><input type="number" step="0.1" id="hba1c" class="input-field" placeholder="< 5.7%"></div>
+                <div class="bg-white p-6 rounded-[2rem] card-shadow border border-slate-50">
+                    <h4 class="font-bold text-slate-800 mb-6 flex items-center gap-2">
+                        <span class="w-8 h-8 bg-orange-50 text-orange-500 rounded-lg flex items-center justify-center text-sm">🍬</span>
+                        Gula & HbA1c
+                    </h4>
+                    <div class="grid grid-cols-2 gap-x-6 gap-y-4">
+                        <div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase">Fasting (FBS)</label><input type="number" step="0.1" id="fbs" class="w-full text-lg font-bold border-b-2 border-slate-100 focus:border-blue-500 outline-none pb-1"></div>
+                        <div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase">HbA1c (%)</label><input type="number" step="0.1" id="hba1c" class="w-full text-lg font-bold border-b-2 border-slate-100 focus:border-blue-500 outline-none pb-1"></div>
                     </div>
                 </div>
 
-                <div class="input-group">
-                    <h4 class="font-bold text-slate-700 mb-4 border-b pb-2 flex items-center gap-2">🍔 Kolesterol (Lipid)</h4>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div><label class="input-label">Total Chol</label><input type="number" step="0.1" id="chol" class="input-field" placeholder="< 5.2"></div>
-                        <div><label class="input-label">Triglyceride</label><input type="number" step="0.1" id="trig" class="input-field" placeholder="< 1.7"></div>
-                        <div><label class="input-label">LDL (Jahat)</label><input type="number" step="0.1" id="ldl" class="input-field" placeholder="< 2.6"></div>
-                        <div><label class="input-label">HDL (Baik)</label><input type="number" step="0.1" id="hdl" class="input-field" placeholder="> 1.0"></div>
+                <div class="bg-white p-6 rounded-[2rem] card-shadow border border-slate-50">
+                    <h4 class="font-bold text-slate-800 mb-6 flex items-center gap-2">
+                        <span class="w-8 h-8 bg-blue-50 text-blue-500 rounded-lg flex items-center justify-center text-sm">🧠</span>
+                        Hati & Ginjal
+                    </h4>
+                    <div class="grid grid-cols-2 gap-x-6 gap-y-4">
+                        <div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase">ALT (U/L)</label><input type="number" id="alt" class="w-full text-lg font-bold border-b-2 border-slate-100 focus:border-blue-500 outline-none pb-1"></div>
+                        <div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 uppercase">Creat (µmol/L)</label><input type="number" id="creat" class="w-full text-lg font-bold border-b-2 border-slate-100 focus:border-blue-500 outline-none pb-1"></div>
                     </div>
                 </div>
 
-                <div class="input-group">
-                    <h4 class="font-bold text-slate-700 mb-4 border-b pb-2 flex items-center gap-2">🧠 Fungsi Hati (Liver)</h4>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div><label class="input-label">ALT (SGPT)</label><input type="number" id="alt" class="input-field" placeholder="< 41 U/L"></div>
-                        <div><label class="input-label">AST (SGOT)</label><input type="number" id="ast" class="input-field" placeholder="< 40 U/L"></div>
-                        <div><label class="input-label">ALP</label><input type="number" id="alp" class="input-field" placeholder="30-120"></div>
-                        <div><label class="input-label">Bilirubin</label><input type="number" step="0.1" id="bili" class="input-field" placeholder="< 21"></div>
-                    </div>
-                </div>
-
-                <div class="input-group">
-                    <h4 class="font-bold text-slate-700 mb-4 border-b pb-2 flex items-center gap-2">💧 Buah Pinggang</h4>
-                    <div class="space-y-3">
-                        <div class="grid grid-cols-2 gap-4">
-                            <div><label class="input-label">Creatinine</label><input type="number" id="creat" class="input-field" placeholder="60-110"></div>
-                            <div><label class="input-label">Urea</label><input type="number" step="0.1" id="urea" class="input-field" placeholder="mmol/L"></div>
-                        </div>
-                        <div><label class="input-label">eGFR</label><input type="number" id="egfr" class="input-field" placeholder="mL/min"></div>
-                    </div>
-                </div>
-
-                <div class="h-4"></div> <button type="submit" id="btnSave" class="w-full bg-slate-800 text-white font-bold py-4 rounded-xl shadow-lg hover:bg-slate-900 transition flex justify-center items-center gap-2">
-                    <span>Simpan Semua Data</span>
+                <button type="button" onclick="saveToGoogle()" id="btnSave" class="w-full bg-blue-600 text-white font-bold py-5 rounded-[2rem] shadow-xl shadow-blue-200 hover:bg-blue-700 active:scale-95 transition-all mt-4">
+                    Simpan Rekod
                 </button>
             </form>
         </div>
 
-        <div id="viewHistory" class="hidden p-4 space-y-4">
-            <button onclick="loadHistory()" class="w-full bg-white border border-blue-200 text-blue-600 py-2 rounded-lg text-sm font-semibold shadow-sm">
-                🔄 Refresh Data Terkini
-            </button>
-            <div id="historyList" class="space-y-4 pb-10">
-                <p class="text-center text-slate-400 py-10 text-sm">Sedang memuatkan rekod...</p>
+        <div id="viewHistory" class="hidden px-6 space-y-4">
+            <button onclick="loadHistory()" class="w-full bg-white border border-blue-100 text-blue-600 text-xs font-bold py-3 rounded-xl">🔄 Refresh Data</button>
+            <div id="historyList" class="space-y-6 pb-20">
+                <div class="flex flex-col items-center py-20 text-slate-400">
+                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-4"></div>
+                    <p class="text-sm">Menyusun data anda...</p>
+                </div>
             </div>
         </div>
-
     </div>
 
     <script>
-        const CLIENT_ID = '30864450637-qaejqmqnq79jq2t7i188ka1fi32oc9m2.apps.googleusercontent.com'; // <--- GANTI INI
+        const CLIENT_ID = '30864450637-qaejqmqnq79jq2t7i188ka1fi32oc9m2.apps.googleusercontent.com'; // <--- JANGAN LUPA GANTI INI
         const SCOPES = 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive.file';
         
-        // --- SKALA RUJUKAN KKM (Untuk Warna) ---
-        // Format: [min, max] untuk julat Normal (Hijau)
-        // Nilai luar julat ini akan jadi Merah atau Kuning
+        // --- SKALA RUJUKAN KKM ---
         const RANGES = {
-            fbs: { min: 3.9, max: 5.6 }, // Gula Puasa
-            hba1c: { min: 0, max: 5.7 },
-            chol: { min: 0, max: 5.2 }, // Kolesterol Total
-            ldl: { min: 0, max: 2.6 },
-            hdl: { min: 1.0, max: 10 }, // Lagi tinggi lagi bagus (min 1.0)
-            alt: { min: 0, max: 41 }, // Hati
-            ast: { min: 0, max: 40 },
-            creat: { min: 60, max: 110 }, // Buah Pinggang
-            egfr: { min: 90, max: 200 } // eGFR > 90 bagus
+            fbs: { min: 3.9, max: 5.6, start: 3.0, end: 12.0, unit: 'mmol/L' },
+            hba1c: { min: 4.0, max: 5.7, start: 3.0, end: 10.0, unit: '%' },
+            alt: { min: 0, max: 41, start: 0, end: 100, unit: 'U/L' },
+            creat: { min: 60, max: 110, start: 30, end: 200, unit: 'µmol/L' }
         };
 
-        let tokenClient;
-        let accessToken = null;
+        let tokenClient, accessToken = null;
 
-        // --- GOOGLE AUTH ---
+        // --- 1. GOOGLE AUTH ---
         function gapiLoaded() {
-            gapi.load('client', async () => {
-                await gapi.client.init({
-                    discoveryDocs: ["https://sheets.googleapis.com/$discovery/rest?version=v4", "https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"],
-                });
-            });
+            gapi.load('client', async () => { await gapi.client.init({ discoveryDocs: ["https://sheets.googleapis.com/$discovery/rest?version=v4", "https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"] }); });
         }
-
         function gisLoaded() {
             tokenClient = google.accounts.oauth2.initTokenClient({
                 client_id: CLIENT_ID, scope: SCOPES,
                 callback: (resp) => {
-                    if (resp.error) return;
                     accessToken = resp.access_token;
-                    document.getElementById('loginScreen').style.display = 'none';
+                    document.getElementById('loginScreen').classList.add('hidden');
                     document.getElementById('mainApp').classList.remove('hidden');
-                    loadHistory(); // Auto load bila masuk
+                    loadHistory();
                 },
             });
         }
         window.onload = () => { gapiLoaded(); gisLoaded(); };
         function handleAuthClick() { tokenClient.requestAccessToken({prompt: 'consent'}); }
 
-        // --- UI TABS ---
-        function switchTab(tab) {
-            document.getElementById('viewInput').classList.add('hidden');
-            document.getElementById('viewHistory').classList.add('hidden');
-            document.getElementById('tabInput').classList.remove('tab-active', 'text-blue-600');
-            document.getElementById('tabHistory').classList.remove('tab-active', 'text-blue-600');
-            
-            if(tab === 'input') {
-                document.getElementById('viewInput').classList.remove('hidden');
-                document.getElementById('tabInput').classList.add('tab-active');
-            } else {
-                document.getElementById('viewHistory').classList.remove('hidden');
-                document.getElementById('tabHistory').classList.add('tab-active');
-                loadHistory();
-            }
-        }
+        // --- 2. FUNGSI OCR SEBENAR (AI) ---
+        async function processOCR() {
+            const fileInput = document.getElementById('ocrFile');
+            const file = fileInput.files[0];
+            if (!file) return;
 
-        // --- SIMPAN DATA (CREATE & APPEND) ---
-        async function saveToGoogle() {
-            const btn = document.getElementById('btnSave');
-            btn.innerHTML = "⏳ Sedang Simpan...";
+            // UI Effect
+            const btn = document.getElementById('btnScan');
+            const overlay = document.getElementById('scanOverlay');
             btn.disabled = true;
+            btn.innerHTML = "🤖 Sedang Membaca...";
+            overlay.classList.remove('hidden');
 
             try {
-                // 1. Cari File
-                let response = await gapi.client.drive.files.list({
-                    q: "name = 'MyHealth_Records' and mimeType = 'application/vnd.google-apps.spreadsheet' and trashed = false",
-                    fields: 'files(id)'
-                });
+                const worker = Tesseract.createWorker({ logger: m => console.log(m) });
+                await worker.load();
+                await worker.loadLanguage('eng');
+                await worker.initialize('eng');
+                
+                const { data: { text } } = await worker.recognize(file);
+                await worker.terminate();
 
-                let sheetId;
-                // Header Column (Mesti ikut turutan array rowData di bawah)
-                const HEADERS = ['Tarikh', 'Hb', 'WBC', 'Platelet', 'RBC', 'FBS', 'RBS', 'HbA1c', 'Tot.Chol', 'Trig', 'LDL', 'HDL', 'ALT', 'AST', 'ALP', 'Bili', 'Creat', 'Urea', 'eGFR'];
+                console.log("AI Text:", text); // Debug di console
 
-                if (response.result.files.length > 0) {
-                    sheetId = response.result.files[0].id;
-                } else {
-                    // Buat File Baru dengan Header Lengkap
-                    const createResp = await gapi.client.sheets.spreadsheets.create({
-                        resource: { properties: { title: 'MyHealth_Records' }, sheets: [{ properties: { title: 'Data' } }] }
-                    });
-                    sheetId = createResp.result.spreadsheetId;
-                    await gapi.client.sheets.spreadsheets.values.append({
-                        spreadsheetId: sheetId, range: 'Data!A1', valueInputOption: 'RAW',
-                        resource: { values: [HEADERS] }
-                    });
-                }
+                // Cari keywords dan masukkan nilai
+                extractValue(text, ['haemoglobin', 'hemoglobin', 'hb'], 'hb');
+                extractValue(text, ['white blood', 'wbc', 'leucocyte'], 'wbc');
+                extractValue(text, ['fasting', 'glucose', 'sugar', 'fbs'], 'fbs');
+                extractValue(text, ['hba1c', 'a1c'], 'hba1c');
+                extractValue(text, ['alt', 'sgpt'], 'alt');
+                extractValue(text, ['creatinine', 'creat'], 'creat');
 
-                // 2. Kumpul Data dari Form
-                // Susunan ini WAJIB sama dengan HEADERS di atas
-                const rowData = [
-                    new Date().toLocaleString('ms-MY'),
-                    val('hb'), val('wbc'), val('platelet'), val('rbc'), // FBC
-                    val('fbs'), val('rbs'), val('hba1c'), // Gula
-                    val('chol'), val('trig'), val('ldl'), val('hdl'), // Lipid
-                    val('alt'), val('ast'), val('alp'), val('bili'), // Hati
-                    val('creat'), val('urea'), val('egfr') // Buah Pinggang
-                ];
-
-                await gapi.client.sheets.spreadsheets.values.append({
-                    spreadsheetId: sheetId, range: 'Data!A1', valueInputOption: 'RAW',
-                    resource: { values: [rowData] }
-                });
-
-                alert("✅ Berjaya! Data selamat disimpan.");
-                document.getElementById('healthForm').reset();
-                switchTab('history');
+                alert("✅ AI selesai membaca! Sila semak kotak yang berwarna biru.");
 
             } catch (err) {
                 console.error(err);
-                alert("❌ Ralat: " + JSON.stringify(err));
+                alert("❌ Gagal membaca. Pastikan gambar jelas.");
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = "<span>📸 Ambil Gambar</span>";
+                overlay.classList.add('hidden');
+                fileInput.value = ''; 
             }
-            btn.innerHTML = "Simpan Semua Data";
-            btn.disabled = false;
         }
 
-        // Helper untuk ambil value (kalau kosong letak '-')
+        function extractValue(fullText, keywords, elementId) {
+            const lines = fullText.split('\n');
+            for (let line of lines) {
+                const lowerLine = line.toLowerCase();
+                if (keywords.some(key => lowerLine.includes(key))) {
+                    const match = line.match(/(\d+(\.\d+)?)/); // Cari nombor
+                    if (match) {
+                        const el = document.getElementById(elementId);
+                        if (el) {
+                            el.value = match[0];
+                            el.style.backgroundColor = "#dbeafe"; // Highlight biru
+                            // Reset warna lepas 3 saat
+                            setTimeout(() => el.style.backgroundColor = "transparent", 3000);
+                            return; 
+                        }
+                    }
+                }
+            }
+        }
+
+        // --- 3. LOGIK TABS & SIMPAN ---
+        function switchTab(tab) {
+            const views = ['viewInput', 'viewHistory'];
+            const tabs = ['tabInput', 'tabHistory'];
+            views.forEach(v => document.getElementById(v).classList.add('hidden'));
+            tabs.forEach(t => document.getElementById(t).classList.remove('tab-active'));
+            document.getElementById('view' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.remove('hidden');
+            document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.add('tab-active');
+            if(tab === 'history') loadHistory();
+        }
+
+        async function saveToGoogle() {
+            const btn = document.getElementById('btnSave');
+            btn.innerText = "⏳ Menyimpan..."; btn.disabled = true;
+            try {
+                let response = await gapi.client.drive.files.list({ q: "name = 'MyHealth_Records' and trashed = false", fields: 'files(id)' });
+                let sheetId;
+                if (response.result.files.length > 0) {
+                    sheetId = response.result.files[0].id;
+                } else {
+                    const createResp = await gapi.client.sheets.spreadsheets.create({ resource: { properties: { title: 'MyHealth_Records' }, sheets: [{ properties: { title: 'Data' } }] } });
+                    sheetId = createResp.result.spreadsheetId;
+                    await gapi.client.sheets.spreadsheets.values.append({ spreadsheetId: sheetId, range: 'Data!A1', valueInputOption: 'RAW', resource: { values: [['Tarikh', 'Hb', 'WBC', 'FBS', 'HbA1c', 'ALT', 'Creat']] } });
+                }
+                const rowData = [ new Date().toLocaleDateString('ms-MY'), val('hb'), val('wbc'), val('fbs'), val('hba1c'), val('alt'), val('creat') ];
+                await gapi.client.sheets.spreadsheets.values.append({ spreadsheetId: sheetId, range: 'Data!A1', valueInputOption: 'RAW', resource: { values: [rowData] } });
+                alert("✅ Berjaya disimpan!"); document.getElementById('healthForm').reset(); switchTab('history');
+            } catch (err) { alert("❌ Ralat simpan data."); }
+            btn.innerText = "Simpan Rekod"; btn.disabled = false;
+        }
         function val(id) { return document.getElementById(id).value || '-'; }
 
-        // --- PAPARAN SEJARAH & ANALISIS WARNA ---
+        // --- 4. PAPARAN SEJARAH (GRAPH) ---
         async function loadHistory() {
             const list = document.getElementById('historyList');
-            list.innerHTML = '<p class="text-center text-gray-400 mt-10">Mengambil data dari Google Drive...</p>';
-
             try {
-                let response = await gapi.client.drive.files.list({
-                    q: "name = 'MyHealth_Records' and mimeType = 'application/vnd.google-apps.spreadsheet' and trashed = false",
-                    fields: 'files(id)'
-                });
-
-                if (response.result.files.length === 0) {
-                    list.innerHTML = '<p class="text-center text-gray-500 mt-10">Tiada rekod dijumpai. Sila masukkan data pertama anda.</p>';
-                    return;
-                }
-
-                let sheetId = response.result.files[0].id;
-                let dataResp = await gapi.client.sheets.spreadsheets.values.get({
-                    spreadsheetId: sheetId, range: 'Data!A2:S50' // Baca sampai column S
-                });
-
+                let response = await gapi.client.drive.files.list({ q: "name = 'MyHealth_Records' and trashed = false", fields: 'files(id)' });
+                if (response.result.files.length === 0) { list.innerHTML = '<p class="text-center py-20 text-slate-400">Tiada data.</p>'; return; }
+                let dataResp = await gapi.client.sheets.spreadsheets.values.get({ spreadsheetId: response.result.files[0].id, range: 'Data!A2:G50' });
                 let rows = dataResp.result.values;
-                if (!rows || rows.length === 0) {
-                    list.innerHTML = '<p class="text-center text-gray-500">Tiada data.</p>'; return;
-                }
+                if (!rows) { list.innerHTML = '<p class="text-center py-20 text-slate-400">Tiada rekod.</p>'; return; }
 
-                // Render Kad (Terbalikkan array supaya yang baru duduk atas)
-                list.innerHTML = rows.reverse().map(row => {
-                    // Mapping Data ikut index array rowData tadi
-                    // 0:Date, 5:FBS, 8:Chol, 12:ALT, 16:Creat
-                    return `
-                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                        <div class="bg-slate-50 px-4 py-2 border-b flex justify-between items-center">
-                            <span class="text-xs font-bold text-slate-500 uppercase">${row[0].split(',')[0]}</span>
-                            <span class="text-[10px] bg-slate-200 text-slate-600 px-2 rounded-full">Manual Entry</span>
+                list.innerHTML = rows.reverse().map(row => `
+                    <div class="bg-white rounded-[2rem] p-6 card-shadow border border-slate-50">
+                        <div class="flex justify-between items-center mb-6">
+                            <span class="text-[10px] font-extrabold text-blue-600 bg-blue-50 px-3 py-1 rounded-full uppercase tracking-widest">${row[0]}</span>
                         </div>
-                        <div class="p-4 grid grid-cols-2 gap-y-4 gap-x-2">
-                            ${statItem('Gula (FBS)', row[5], 'fbs')}
-                            ${statItem('Kolesterol', row[8], 'chol')}
-                            ${statItem('Hati (ALT)', row[12], 'alt')}
-                            ${statItem('Ginjal (Creat)', row[16], 'creat')}
+                        <div class="space-y-6">
+                            ${renderScaleCard('Gula (FBS)', row[3], 'fbs')}
+                            ${renderScaleCard('HbA1c', row[4], 'hba1c')}
+                            ${renderScaleCard('Hati (ALT)', row[5], 'alt')}
+                            ${renderScaleCard('Ginjal (Creat)', row[6], 'creat')}
                         </div>
-                        <div class="bg-blue-50 px-4 py-2 text-center">
-                            <button onclick="alert('Paparan terperinci akan datang!')" class="text-xs text-blue-600 font-bold">Lihat Butiran Penuh &rarr;</button>
-                        </div>
-                    </div>`;
-                }).join('');
-
-            } catch (err) {
-                list.innerHTML = '<p class="text-center text-red-400">Gagal memuatkan data.</p>';
-            }
+                    </div>
+                `).join('');
+            } catch (err) { list.innerHTML = 'Ralat muat data.'; }
         }
 
-        // Fungsi tentukan warna (Hijau/Merah)
-        function statItem(label, value, type) {
-            if(!value || value === '-') return `<div><p class="text-[10px] text-gray-400 uppercase">${label}</p><p class="text-sm font-bold text-gray-300">-</p></div>`;
-            
-            let num = parseFloat(value);
-            let colorClass = "text-slate-800"; // Default hitam
-            
-            // Check Skala
-            if (RANGES[type]) {
-                if (num >= RANGES[type].min && num <= RANGES[type].max) colorClass = "text-green-600"; // Selamat
-                else colorClass = "text-red-600"; // Bahaya/Warning
-            }
-
-            // Tambah icon status
-            let icon = (colorClass.includes('red')) ? '⚠️' : '✅';
-
+        function renderScaleCard(label, value, type) {
+            if (value === '-' || !value) return '';
+            const val = parseFloat(value); const cfg = RANGES[type];
+            let pos = ((val - cfg.start) / (cfg.end - cfg.start)) * 100; pos = Math.max(0, Math.min(100, pos));
+            const normalStart = ((cfg.min - cfg.start) / (cfg.end - cfg.start)) * 100;
+            const normalWidth = ((cfg.max - cfg.min) / (cfg.end - cfg.start)) * 100;
+            const isNormal = val >= cfg.min && val <= cfg.max;
+            const statusColor = isNormal ? 'text-green-600' : 'text-red-500';
             return `
-            <div>
-                <p class="text-[10px] text-gray-400 uppercase font-semibold">${label}</p>
-                <p class="text-lg font-bold ${colorClass}">${value} <span class="text-[10px]">${icon}</span></p>
-            </div>`;
+                <div class="space-y-1">
+                    <div class="flex justify-between items-end"><p class="text-[11px] font-bold text-slate-400 uppercase tracking-tight">${label}</p><p class="text-lg font-extrabold ${statusColor}">${val} <span class="text-[10px] text-slate-400">${cfg.unit}</span></p></div>
+                    <div class="scale-line"><div class="zone-normal" style="left: ${normalStart}%; width: ${normalWidth}%"></div><div class="scale-marker" style="left: ${pos}%"></div></div>
+                    <div class="flex justify-between text-[8px] font-bold text-slate-300 mt-1 uppercase tracking-tighter"><span>${cfg.start}</span><span>Normal: ${cfg.min}-${cfg.max}</span><span>${cfg.end}</span></div>
+                </div>`;
         }
     </script>
 </body>
